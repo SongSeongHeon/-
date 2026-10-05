@@ -3,9 +3,9 @@
 정보처리기사 실기 기출 **220문제**(2023년 1회 ~ 2026년 2회)를 폰과 PC에서 풀 수 있는 웹앱이에요.
 설치와 로그인 없이 링크만 열면 바로 쓸 수 있고, 풀이 기록은 내 기기에만 저장돼요.
 
-### 👉 [바로 시작하기](https://songseongheon.github.io/Engineer_Information_Processing/%EC%A0%95%EC%B2%98%EA%B8%B0_%EC%8B%A4%EA%B8%B0_%EC%9B%B9/)
+### 👉 [바로 시작하기](https://songseongheon.github.io/Engineer_Information_Processing/)
 
-`https://songseongheon.github.io/Engineer_Information_Processing/정처기_실기_웹/`
+`https://songseongheon.github.io/Engineer_Information_Processing/`
 
 ---
 
@@ -272,9 +272,8 @@ PC에서 한 번 설정했다면 폰에서 다시 만들 필요가 없어요.
 ```
 Engineer_Information_Processing/
 ├─ README.md
-└─ 정처기_실기_웹/
-   ├─ index.html      앱 전체 (화면, 문제, 해설, 채점 규칙이 한 파일에 들어 있어요)
-   └─ img/            문제 이미지 35장
+├─ index.html      앱 전체 (화면, 문제, 해설, 채점 규칙이 한 파일에 들어 있어요)
+└─ img/            문제 이미지 35장
 ```
 
 ### 이미지 파일 이름
@@ -299,4 +298,4 @@ Engineer_Information_Processing/
 
 ---
 
-### 👉 [바로 시작하기](https://songseongheon.github.io/Engineer_Information_Processing/%EC%A0%95%EC%B2%98%EA%B8%B0_%EC%8B%A4%EA%B8%B0_%EC%9B%B9/)
+### 👉 [바로 시작하기](https://songseongheon.github.io/Engineer_Information_Processing/)
