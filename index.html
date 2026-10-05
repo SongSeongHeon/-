@@ -354,6 +354,22 @@ pre.code .blank{background:#FFD34D;color:#17233A;box-shadow:none;outline:1.5px s
 .notes li{margin:0 0 8px}
 .notes b{color:var(--ink)}
 
+/* 이어서 풀기 / AI 출제 */
+.card.resume{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px solid var(--primary);background:var(--primary-soft);box-shadow:none}
+.resume .rtxt{min-width:0}
+.resume .rtxt b{display:block;font-size:15px;color:var(--primary-d)}
+.resume .rtxt p{margin:2px 0 0;font-size:13px;color:#3A4A6B;line-height:1.5;word-break:keep-all}
+.resume .rbt{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+.chip[disabled]{opacity:.38;cursor:not-allowed}
+.sg{font-size:13.5px;padding:0 2px}
+/* 정답 고치기 */
+.fix{margin-top:12px}
+.fix .dmsg{margin:0 0 10px}
+.fixbox{margin-top:8px;padding:14px;border:1.5px solid var(--primary);border-radius:12px;background:var(--primary-soft)}
+.fixbox h3{margin:0 0 6px;font-size:14px}
+.fixbox .d{margin:0 0 10px;font-size:13px;color:#3A4A6B;line-height:1.65}
+.fixbox textarea.tx,.fixbox input[type=text]{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;font:15px/1.5 var(--mono);background:#fff;margin:0 0 8px}
+.fixbox .row{display:flex;gap:8px;flex-wrap:wrap}
 /* ---------- 기록 설정 / 이미지 점검 ---------- */
 .subbar{display:flex;align-items:center;gap:4px;padding:8px 8px 4px}
 .subbar h1{margin:0;font-size:18px}
@@ -5234,13 +5250,85 @@ Object.assign(VNOTE, {
 
 
 /* =====================================================================
+   데이터 보정
+   - 2023년 1회 5, 8, 11, 12, 18번: 시나공 기출문제집 PDF(2023년 4월 시행) 원문으로 문제 글과 보기를 바로잡았어요.
+   - 빈칸 채우기 분류를 코드 문제만 남기도록 정리했어요.
+   ===================================================================== */
+(function(){
+  const get = (y, r, n) => { const R = ROUNDS.find(x => x.year === y && x.round === r); return R && R.questions.find(q => q.n === n); };
+  const set = (y, r, n, f) => { const q = get(y, r, n); if(q) Object.assign(q, f); };
+
+  /* ---- 2023년 1회 (원문 기준) ---- */
+  set(2023, 1, 5, {
+    stem: "데이터 교환 방식에 대한 다음 설명에서 괄호(①, ②)에 들어갈 알맞은 용어를 <보기>에서 찾아 쓰시오. (5점)",
+    extra: "• ( ① ): 연결형 통신에서 주로 사용되는 방식으로, 출발지와 목적지의 전송 경로를 미리 연결하여 논리적으로 고정한 후 통신하는 방식\n"
+         + "• ( ② ): 비연결형 통신에서 주로 사용되는 방식으로, 사전에 접속 절차를 수행하지 않고 헤더에 출발지에서 목적지까지의 경로 지정을 위한 충분한 정보를 붙여서 개별적으로 전달하는 방식\n\n"
+         + "[보기]\n• 회선 교환 방식  • 데이터그램 방식  • 가상 회선 방식  • 메시지 교환 방식",
+    ans: ["① 가상 회선 방식", "② 데이터그램 방식"]
+  });
+  set(2023, 1, 8, {
+    stem: "멀웨어(Malware)에 대한 다음 설명에서 괄호(①~③)에 들어갈 알맞은 용어를 <보기>에서 찾아 쓰시오. (5점)",
+    extra: "• ( ① ): 윈도우나 응용 프로그램의 취약점 또는 E-mail 등을 통해 전파되며, ( ③ )과(와) 같이 자기복제가 가능하며 네트워크를 통해 스스로 전파가 가능하다.\n"
+         + "• ( ② ): 정상적인 응용 프로그램에 포함되어 실행되는 악성코드로, 정상적인 응용 프로그램으로 위장하고 있다가 활성화되면 공격자는 이를 이용하여 사용자의 컴퓨터를 조종할 수 있게 된다.\n"
+         + "• ( ③ ): 정상 파일을 감염시키며, 자기복제가 가능하다. 파일을 통해 감염되며 네트워크를 통해 스스로 전파되지는 못한다.\n\n"
+         + "[보기]\n• 웜  • 바이러스  • 트로이 목마",
+    ans: ["① 웜", "② 트로이 목마", "③ 바이러스"]
+  });
+  set(2023, 1, 11, {
+    stem: "다음 설명에서 괄호에 들어갈 알맞은 디자인 패턴을 아래에서 찾아 쓰시오. (5점)",
+    extra: "[생성 패턴]\nAbstract Factory, Builder, Factory Method, Prototype, Singleton\n\n"
+         + "[구조 패턴]\nAdapter, Bridge, Composite, Decorator, Facade, Proxy\n\n"
+         + "[행위 패턴]\nChain of Responsibility, Command, Interpreter, Iterator, Mediator, Memento, Observer, Strategy, Template Method\n\n"
+         + "( )은/는 복잡한 시스템을 개발하기 쉽도록 클래스나 객체들을 조합하는 패턴에 속하며, 대리자라는 이름으로도 불린다. 내부에서는 객체 간의 복잡한 관계를 단순하게 정리해 주고, 외부에서는 객체의 세부적인 내용을 숨기는 역할을 한다.",
+    ans: ["Proxy"]
+  });
+  set(2023, 1, 12, {
+    stem: "릴레이션을 구성하는 용어들에 대한 다음 설명에서 괄호(①~③)에 들어갈 알맞은 답을 <보기>에서 찾아 쓰시오. (5점)",
+    extra: "• ( ① ): 릴레이션을 구성하는 각각의 행을 의미하며, 파일 구조에서는 레코드에 해당함\n"
+         + "• ( ② ): 데이터 개체를 구성하고 있는 속성들에 데이터 타입이 정의되어 구체적인 데이터 값을 가진 것으로, 실제 값을 가진 튜플을 의미함\n"
+         + "• ( ③ ): 튜플의 개수를 의미함\n\n"
+         + "[보기]\n• 도메인  • 차수  • 속성  • 튜플\n• 디그리  • 카디널리티  • 릴레이션 스키마  • 릴레이션 인스턴스",
+    ans: ["① 튜플", "② 릴레이션 인스턴스", "③ 카디널리티"]
+  });
+  set(2023, 1, 18, {
+    stem: "스키마에 대한 다음 설명에서 괄호(①~③)에 들어갈 알맞은 답을 <보기>에서 찾아 쓰시오. (5점)",
+    extra: "• ( ① ) 스키마는 데이터베이스의 전체적인 논리적 구조로, 모든 응용 프로그램이나 사용자들이 필요로 하는 데이터를 종합한 조직 전체의 데이터베이스이다.\n"
+         + "• ( ② ) 스키마는 실제로 저장될 레코드의 형식, 저장 데이터 항목의 표현 방법, 내부 레코드의 물리적 순서 등을 나타낸다.\n"
+         + "• ( ③ ) 스키마는 사용자나 응용 프로그래머가 각 개인의 입장에서 필요로 하는 데이터베이스의 논리적 구조를 정의한 것이다.\n\n"
+         + "[보기]\n• 외부  • 내부  • 개념",
+    ans: ["① 개념", "② 내부", "③ 외부"]
+  });
+
+  /* 보기가 생긴 문제는 보기에서 고르는 방식으로 채점해요 */
+  Object.assign(SPEC, {
+    "2023-1-5":  {mode: "each", labels: ["①", "②"], opts: ["회선 교환 방식", "데이터그램 방식", "가상 회선 방식", "메시지 교환 방식"], key: ["가상 회선 방식", "데이터그램 방식"]},
+    "2023-1-8":  {mode: "each", labels: ["①", "②", "③"], opts: ["웜", "바이러스", "트로이 목마"], key: ["웜", "트로이 목마", "바이러스"]},
+    "2023-1-12": {mode: "each", labels: ["①", "②", "③"], opts: ["도메인", "차수", "속성", "튜플", "디그리", "카디널리티", "릴레이션 스키마", "릴레이션 인스턴스"], key: ["튜플", "릴레이션 인스턴스", "카디널리티"]},
+    "2023-1-18": {mode: "each", labels: ["①", "②", "③"], opts: ["외부", "내부", "개념"], key: ["개념", "내부", "외부"]}
+  });
+
+  /* 원문 대조 표시 + 설명 */
+  ["2023-1-5", "2023-1-8", "2023-1-11", "2023-1-12", "2023-1-18"].forEach(id => { VERIFY[id] = ["pdf"]; });
+  delete VNOTE["2023-1-5"]; delete VNOTE["2023-1-8"]; delete VNOTE["2023-1-11"]; delete VNOTE["2023-1-12"]; delete VNOTE["2023-1-18"];
+  EXPL["2023-1-11"] = "프록시(Proxy) 패턴이에요. 실제 객체 앞에 대리 객체를 두고, 접근을 제어하거나 지연 생성, 부가 작업을 해요. 그래서 '대리자'라는 이름으로도 불려요. (구조 패턴)\n보기에 Facade(퍼사드)도 있어서 헷갈리기 쉬워요. 이 문제는 '대리자'라는 말이 결정적인 단서라서 Proxy가 정답이에요.";
+  EXPL["2023-1-12"] = "- 튜플: 릴레이션(테이블)의 행(레코드)\n- 릴레이션 인스턴스: 어느 한 시점에 저장된, 실제 값을 가진 튜플의 집합(릴레이션 외연)\n- 카디널리티: 튜플의 개수\n참고: 차수(Degree, 디그리)는 속성(열)의 수예요. 보기의 도메인은 속성이 가질 수 있는 값의 범위, 릴레이션 스키마는 릴레이션의 구조 정의예요.";
+  EXPL["2023-1-18"] = "ANSI/SPARC 3단계 스키마예요.\n- ① 개념 스키마: 조직 전체의 논리 구조, 접근 권한과 무결성 규칙 포함(하나만 존재)\n- ② 내부 스키마: 실제 저장될 레코드의 형식, 저장 항목의 표현 방법, 레코드의 물리적 순서 등 물리적 저장 구조\n- ③ 외부 스키마: 사용자와 응용 프로그래머 개인의 입장에서 본 논리 구조(서브 스키마, 여러 개)";
+  EXPL["2023-1-5"] = "패킷 교환의 두 방식이에요.\n- ① 가상 회선 방식: 연결형 통신, 처음에 경로를 정해 두고 그 경로로 계속 전송 (ATM이 대표 예)\n- ② 데이터그램 방식: 비연결형 통신, 패킷마다 독립적으로 경로를 선택 (인터넷 IP)\n보기의 회선 교환은 물리적 회선을 점유하는 방식(전화망), 메시지 교환은 메시지 단위로 저장 후 전달하는 방식이에요.\n키워드: '경로 고정'이면 가상 회선, '헤더에 경로 정보를 담아 개별 전달'이면 데이터그램";
+
+  /* ---- 빈칸 채우기는 코드 문제만 ---- */
+  set(2023, 3, 3, {type: "concept"});   // 리눅스 권한 명령어는 개념 문제로
+  set(2025, 1, 15, {type: "calc"});     // 제어 흐름 노드 순서 찾기는 계산 문제로
+})();
+
+
+/* =====================================================================
    앱
    ===================================================================== */
 (function(){
 'use strict';
 
 const AREAS = ["C","Java","Python","SQL","데이터베이스","소프트웨어 공학","테스트","네트워크","보안","운영체제","알고리즘","기타"];
-const TYPES = [["code","코드 해석"],["concept","개념"],["fill","빈칸 채우기"],["calc","계산"]];
+const TYPES = [["code","코드 해석"],["concept","개념"],["fill","코드 빈칸 채우기"],["calc","계산"]];
 const TYPE_NAME = Object.fromEntries(TYPES);
 const CREDIT = "문제 출처: Life-Journey (chobopark.tistory.com), CC BY 4.0";
 const VLABEL = {
@@ -5248,7 +5336,8 @@ const VLABEL = {
   sql:  ["DB 실행 검증", "표 데이터를 실제 DB(SQLite)에 넣고 SQL을 실행해서 확인했어요."],
   calc: ["계산 검증", "스크립트나 직접 계산으로 정답을 다시 구해서 확인했어요."],
   img:  ["이미지 대조", "문제 이미지의 표와 그림을 정답과 맞춰서 확인했어요."],
-  src:  ["원문 정답", "블로그 원문의 정답을 그대로 실었어요. 따로 검증하지는 못했어요."]
+  src:  ["원문 정답", "블로그 원문의 정답을 그대로 실었어요. 따로 검증하지는 못했어요."],
+  pdf:  ["원문 대조", "기출문제집 PDF의 원문 문제와 보기를 확인해서 바로잡았어요. 정답은 기출 해설과 맞춰 확인했어요."]
 };
 
 const pad2 = n => String(n).padStart(2,"0");
@@ -5338,7 +5427,7 @@ function probe(name){
 }
 
 /* ---- 저장 ---- */
-const KEYS = {progress:"jcs-progress-v1", flags:"jcs-flags-v1", att:"jcs-att-v1", notes:"jcs-notes-v1", learn:"jcs-learn-v1", cards:"jcs-cards-v1", settings:"jcs-settings-v1", chats:"jcs-chat-v1", ai:"jcs-ai-v1"};
+const KEYS = {progress:"jcs-progress-v1", flags:"jcs-flags-v1", att:"jcs-att-v1", notes:"jcs-notes-v1", learn:"jcs-learn-v1", cards:"jcs-cards-v1", settings:"jcs-settings-v1", chats:"jcs-chat-v1", ai:"jcs-ai-v1", ansfix:"jcs-ansfix-v1", resume:"jcs-resume-v1", aiq:"jcs-aiq-v1"};
 function load(key, def){ try{ const v = JSON.parse(localStorage.getItem(key) || "null"); return v && typeof v === "object" ? v : def; }catch(e){ return def; } }
 function save(name, val){ try{ localStorage.setItem(KEYS[name], JSON.stringify(val)); }catch(e){} }
 let progress = load(KEYS.progress, {}), flags = load(KEYS.flags, {}), att = load(KEYS.att, {}),
@@ -5347,6 +5436,13 @@ let progress = load(KEYS.progress, {}), flags = load(KEYS.flags, {}), att = load
     chats = load(KEYS.chats, {}),
     ai = Object.assign({key:"", model:"gemini-3.6-flash", img:true, hint:true}, load(KEYS.ai, {}));
 if(ai.model === "gemini-2.5-flash"){ ai.model = "gemini-3.6-flash"; save("ai", ai); }
+let ansfix = load(KEYS.ansfix, {});
+let resume = load(KEYS.resume, null);
+const AIQ = {};
+let aiqStore = load(KEYS.aiq, {qs: []});
+if(!aiqStore || !Array.isArray(aiqStore.qs)) aiqStore = {qs: []};
+aiqStore.qs = aiqStore.qs.filter(q => q && typeof q.id === "string" && typeof q.stem === "string" && Array.isArray(q.ans));
+aiqStore.qs.forEach(q => { AIQ[q.id] = q; });
 const wrongCount = () => ALL.filter(q => progress[q.id] === "x").length;
 const flagCount  = () => ALL.filter(q => flags[q.id]).length;
 const noteCount  = () => ALL.filter(q => notes[q.id]).length;
@@ -5454,6 +5550,17 @@ function formOf(q){
   FORMS[q.id] = f;
   return f;
 }
+function linesOf(s){ return String(s == null ? "" : s).replace(/\r/g, "").split("\n").map(l => l.trim()).filter(Boolean); }
+function linesEqual(u, e){
+  const ul = linesOf(u), el = linesOf(e), sq = x => x.replace(/\s+/g, "");
+  if(!el.length || !ul.length) return false;
+  if(ul.length === el.length) return el.every((l, i) => sq(l) === sq(ul[i]));
+  if(ul.length === 1 && el.length > 1 && el.every(l => !/\s/.test(l))){
+    const tk = ul[0].split(/\s+/);
+    return tk.length === el.length && el.every((l, i) => l === tk[i]);
+  }
+  return false;
+}
 function tokensOf(s){
   return String(s).replace(/[{}\[\]]/g,"").split(",").map(x => x.trim().replace(/^['"]|['"]$/g,"")).filter(Boolean).sort();
 }
@@ -5494,6 +5601,7 @@ function gradeQ(q, f, inp){
     const val = String(t[i] || "");
     if(!val.trim()) return false;
     if(fd.cidr){ const ip = val.trim(); return inCidr(ip, fd.cidr) && (fd.not || []).indexOf(ip) < 0; }
+    if(fd.multiline && (q.type === "code" || q.type === "calc") && !fd.digits) return fd.acc.some(a => linesEqual(val, a));
     const nv = normStr(val, q, fd);
     return fd.acc.some(a => normStr(a, q, fd) === nv);
   });
@@ -5504,6 +5612,34 @@ function canLearn(q, f, r, inp){
   if(f.fields.some(fd => fd.cidr)) return false;
   const bad = f.fields.map((fd,i) => i).filter(i => r.per[i] === false);
   return bad.length > 0 && bad.every(i => String((inp.t || [])[i] || "").trim());
+}
+
+const explOf = q => q.ai ? (q.expl || "") : (EXPL[q.id] || "");
+const findQ = id => BY_ID[id] || AIQ[id];
+
+/* ---- 내가 고친 정답 ---- */
+const ORIG = {};
+function applyFix(id){
+  const q = BY_ID[id], fx = ansfix[id];
+  if(!q || !fx || !Array.isArray(fx.ans)) return;
+  if(!ORIG[id]) ORIG[id] = {ans: q.ans.slice(), key: SPEC[id] && SPEC[id].key ? JSON.parse(JSON.stringify(SPEC[id].key)) : null};
+  q.ans = fx.ans.slice();
+  if(fx.key && SPEC[id] && SPEC[id].mode && SPEC[id].mode !== "text") SPEC[id].key = JSON.parse(JSON.stringify(fx.key));
+  delete FORMS[id]; delete HAY[id];
+}
+function restoreOrig(id){
+  const q = BY_ID[id], o = ORIG[id];
+  if(!q || !o) return;
+  q.ans = o.ans.slice();
+  if(o.key && SPEC[id]) SPEC[id].key = JSON.parse(JSON.stringify(o.key));
+  delete ORIG[id]; delete FORMS[id]; delete HAY[id];
+}
+function revertFix(id){ restoreOrig(id); delete ansfix[id]; save("ansfix", ansfix); }
+function replaceFixes(map){
+  Object.keys(ORIG).forEach(restoreOrig);
+  ansfix = map;
+  Object.keys(ansfix).forEach(applyFix);
+  save("ansfix", ansfix);
 }
 
 /* ---- 상태 ---- */
@@ -5521,6 +5657,7 @@ const state = {
   cAreas:new Set(cardAreas), cOrder:"freq", cUnknown:false,
   q:"", qNote:false,
   lastStudy:"rounds", navOpen:false, statOpen:{},
+  aiq:{area:"C", type:"code", count:5, level:"normal"}, aiqBusy:false, aiqErr:"",
   chatOpen:false, chatBusy:false, chatErr:"", chatDraft:"", chatKey:"", chatQuick:[], aiMsg:null, aiBusy:false, aiShowKey:false, aiCustom:false,
   session:null, cs:null, dataMsg:null, dataErr:false, showExport:false
 };
@@ -5619,7 +5756,7 @@ function resultsHTML(){
 /* =====================================================================
    화면 공통
    ===================================================================== */
-const STUDY = ["rounds","areas","random","review"];
+const STUDY = ["rounds","areas","random","review","ai"];
 const ICON = {
   study:'<svg viewBox="0 0 24 24"><path d="M5 4.5h11.5A2.5 2.5 0 0 1 19 7v13H7.5A2.5 2.5 0 0 1 5 17.5z"/><path d="M5 17.5A2.5 2.5 0 0 1 7.5 15H19"/><path d="M9 8.5h6"/></svg>',
   cards:'<svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="11.5" rx="2.5"/><path d="M7 4.5h10"/></svg>',
@@ -5725,8 +5862,8 @@ function renderHome(){
   let body = "", bar = "";
 
   if(study){
-    const segs = [["rounds","회차별"],["areas","영역별"],["random","무작위"],["review", rc ? "복습 "+rc : "복습"]];
-    body += dashHTML() + '<div class="seg" role="tablist">' + segs.map(t => '<button class="sg" role="tab" data-act="setMode" data-v="'+t[0]+'" aria-selected="'+(m===t[0])+'">'+esc(t[1])+'</button>').join("") + '</div>';
+    const segs = [["rounds","회차별"],["areas","영역별"],["random","무작위"],["review", rc ? "복습 "+rc : "복습"],["ai","AI 출제"]];
+    body += resumeCardHTML() + dashHTML() + '<div class="seg" role="tablist">' + segs.map(t => '<button class="sg" role="tab" data-act="setMode" data-v="'+t[0]+'" aria-selected="'+(m===t[0])+'">'+esc(t[1])+'</button>').join("") + '</div>';
   }
   if(m === "rounds"){
     let inner = "";
@@ -5755,6 +5892,8 @@ function renderHome(){
     body += cardSec("목록 ("+list.length+")", list.length
       ? '<ul class="list">' + list.map(q => '<li><button class="ritem" data-act="openAt" data-id="'+q.id+'"><div class="rtop"><span class="rt">'+esc(q.label)+'<span class="ra">'+esc(q.area)+'</span></span>'+pillFor(q)+'</div></button></li>').join("") + '</ul>'
       : '<p class="note" style="margin:0">아직 모인 문제가 없어요. 문제를 풀고 채점하면 틀린 문제가 쌓이고, 풀이 화면 위쪽의 ☆ 체크로 따로 모아둘 수 있어요.</p>');
+  } else if(m === "ai"){
+    body += panelAi();
   } else if(m === "cards"){
     const uc = ALL.filter(q => cards[q.id] === "u").length, kc = ALL.filter(q => cards[q.id] === "k").length;
     body += cardSec("키워드 카드", '<p class="note" style="margin:0">설명을 보고 용어를 떠올리는 연습이에요. 개념 문제 '+ALL.filter(q => q.type === "concept").length+'개를 카드로 보여줘요. 답을 확인한 뒤 "알아요 / 헷갈려요"로 표시하면, 헷갈리는 카드만 다시 볼 수 있어요.</p>');
@@ -5772,7 +5911,10 @@ function renderHome(){
     body += panelStats();
   }
 
-  if(study){
+  if(m === "ai"){
+    const o = state.aiq;
+    bar = '<div class="startbar"><div class="count"><b>'+o.count+'</b>문제</div><button class="btn primary" data-act="aiqGen" '+(state.aiqBusy || !aiReady() ? "disabled" : "")+'>'+(state.aiqBusy ? "만드는 중..." : "AI로 문제 만들기")+'</button></div>';
+  } else if(study){
     const n = targetCount();
     bar = '<div class="startbar"><div class="count"><b>'+n+'</b>문제</div><button class="btn primary" data-act="start" '+(n?"":"disabled")+'>풀기 시작</button></div>';
   } else if(m === "cards"){
@@ -5833,7 +5975,7 @@ function renderInputs(q, f, inp, msg){
       const val = esc(inp.t[i] || "");
       h += '<div class="in-row">' + (fd.label ? '<span class="in-label">'+esc(fd.label)+'</span>' : '')
         + (fd.rows > 1
-            ? '<textarea data-inp data-i="'+i+'" rows="'+fd.rows+'" placeholder="여러 줄이면 줄을 바꿔서 적어요" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">'+val+'</textarea>'
+            ? '<textarea data-inp data-i="'+i+'" rows="'+fd.rows+'" placeholder="'+(q.type === "code" || q.type === "calc" ? "출력되는 줄 그대로, 줄을 바꿔서 적어요" : "여러 줄이면 줄을 바꿔서 적어요")+'" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">'+val+'</textarea>'
             : '<input data-inp data-i="'+i+'" type="text" value="'+val+'" placeholder="답을 적어요" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">')
         + '</div>';
     });
@@ -5874,10 +6016,45 @@ function mineHTML(q, f, inp, r){
   }
   return '<div class="mine"><h3>내가 쓴 답</h3>' + rows.join("") + '</div>';
 }
+function fixInfo(f){
+  if(f.mode === "text") return {kind: "text", special: !!(f.combos || f.setTokens || f.fields.some(fd => fd.cidr))};
+  if(f.mode === "each" && f.multi) return {kind: "none"};
+  return {kind: "choice"};
+}
+function genAnsFromKey(f, key){
+  if(f.mode === "pick") return key.map(k => { const o = f.opts.find(x => x.v === k); return /^[ㄱ-ㅎ㉠-㉧]$/.test(k) && o && o.text ? k + ". " + o.text : k; });
+  if(f.mode === "each") return f.labels.map((lab, i) => lab + " " + key[i]);
+  return [key.join(" → ")];
+}
+function fixHTML(q, f){
+  const s = state.session, open = !!s.fixOpen[q.id], fixed = !!ansfix[q.id], info = fixInfo(f);
+  let h = '<div class="fix">';
+  if(s.fixMsg[q.id]) h += '<div class="dmsg'+(s.fixErr[q.id] ? " err" : "")+'">'+esc(s.fixMsg[q.id])+'</div>';
+  if(!open) return h + '<button class="link" data-act="fixOpen">자동 채점이 이상한가요? 정답 고치기</button>' + (fixed ? ' <button class="link" data-act="fixRevert">원래 정답으로 되돌리기</button>' : '') + '</div>';
+  h += '<div class="fixbox"><h3>정답 고치기</h3>';
+  if(info.kind === "none"){
+    return h + '<p class="d">이 문제는 정답을 직접 고치는 기능을 지원하지 않아요. 아래 <b>맞았어요 / 틀렸어요</b> 버튼으로 채점을 고쳐 주세요.</p><button class="btn sm" data-act="fixCancel">닫기</button></div></div>';
+  }
+  h += '<p class="d">자동 채점이 틀렸다면 정답을 직접 고쳐요. 고친 정답은 이 기기에 저장되고, 바로 내 답을 다시 채점해요.</p>';
+  if(info.kind === "text"){
+    h += '<textarea id="fixtext" class="tx" rows="'+Math.min(8, Math.max(3, q.ans.length + 1))+'" spellcheck="false">'+esc(q.ans.join("\n"))+'</textarea>'
+      + '<p class="d">한 줄이 한 칸의 정답이에요. 여러 줄을 출력하는 문제는 출력되는 줄 그대로 적어요. 번호가 있는 칸은 <b>1. 값</b>처럼 적고, 같은 뜻의 다른 표기는 <b>또는</b>으로 이어요. 예: OSPF 또는 Open Shortest Path First</p>'
+      + (info.special ? '<p class="d" style="color:var(--bad)">이 문제는 채점 규칙이 따로 있어서 정답 표시만 바뀌어요. 채점 결과는 아래 맞았어요 / 틀렸어요 버튼으로 고쳐 주세요.</p>' : '');
+  } else {
+    const key = f.key || [];
+    h += '<input id="fixtext" type="text" value="'+esc(key.join(", "))+'" autocomplete="off" spellcheck="false">'
+      + '<p class="d">'+(f.mode === "each" ? "칸 순서대로 " + f.labels.length + "개를" : f.mode === "order" ? "누르는 순서대로" : "정답을")+' 쉼표로 이어서 적어요. 고를 수 있는 값: '+esc(f.opts.map(o => o.v).join(", "))+'</p>';
+  }
+  h += '<div class="row"><button class="btn sm primary" data-act="fixSave">저장하고 다시 채점</button><button class="btn sm" data-act="fixCancel">취소</button>'
+    + (fixed ? '<button class="btn sm danger" data-act="fixRevert">원래 정답으로 되돌리기</button>' : '') + '</div></div></div>';
+  return h;
+}
 function verifyHTML(q){
+  if(q.ai) return '<div class="vrow"><div class="vi"><span class="vb warn">AI 생성</span><span>AI가 만든 문제라 정답이 틀릴 수 있어요. 코드 문제의 출력은 직접 확인해 보세요. 정답이 이상하면 아래 정답 고치기로 바로잡을 수 있어요.</span></div></div>';
   const v = VERIFY[q.id] || ["src"], note = VNOTE[q.id];
   let h = '<div class="vrow">' + v.map(k => '<div class="vi"><span class="vb '+(k === "src" ? "src" : "")+'">'+VLABEL[k][0]+'</span><span>'+VLABEL[k][1]+'</span></div>').join("");
   if(note) h += '<div class="vwarn"><span class="vb warn">확인 필요</span> '+esc(note)+'</div>';
+  if(ansfix[q.id]) h += '<div class="vwarn">이 문제의 정답은 내가 고친 내용이에요. 위의 확인 표시와 다를 수 있어요.</div>';
   return h + '</div>';
 }
 function topicsHTML(q){
@@ -5913,13 +6090,13 @@ function renderSolve(){
   const anim = s.justGraded === q.id;
   s.justGraded = null;
 
-  let h = topbarHTML(q.year+"년 "+q.round+"회", (s.i+1)+" / "+total, (s.i+1)/total*100, q);
+  let h = topbarHTML(q.ai ? "AI 예상문제" : q.year+"년 "+q.round+"회", (s.i+1)+" / "+total, (s.i+1)/total*100, q);
   h += '<main class="sheet"><article class="qcard'+(res ? " has-stamp" : "")+'">'
     + (res ? '<span class="stamp '+res+(anim ? " anim" : "")+'">'+(res === "o" ? STAMP_O : STAMP_X)+'</span>' : '')
-    + '<div class="q-top"><span class="qn">'+q.n+'</span><span class="pill">'+esc(q.area)+'</span><span class="pill">'+esc(TYPE_NAME[q.type]||q.type)+'</span>' + freqTag(q)
+    + '<div class="q-top"><span class="qn">'+q.n+'</span><span class="pill">'+esc(q.area)+'</span><span class="pill">'+esc(TYPE_NAME[q.type]||q.type)+'</span>' + (q.ai ? '<span class="pill hot">AI 생성</span>' : '') + freqTag(q)
     + (!res && progress[q.id] === "x" ? '<span class="pill bad">지난번에 틀렸어요</span>' : '') + '</div>'
     + questionBody(q, {n:0}, true)
-    + '<div class="qfoot"><a class="qlink" href="'+esc(q.src)+'" target="_blank" rel="noopener noreferrer">원문 보기 '+ICON.ext+'</a><button class="aibtn" data-act="chatOpen">'+ICON.spark+'AI에게 물어보기</button></div></article>';
+    + '<div class="qfoot">'+(q.ai ? '<span></span>' : '<a class="qlink" href="'+esc(q.src)+'" target="_blank" rel="noopener noreferrer">원문 보기 '+ICON.ext+'</a>')+'<button class="aibtn" data-act="chatOpen">'+ICON.spark+'AI에게 물어보기</button></div></article>';
 
   if(!st){
     h += renderInputs(q, f, inp, s.msg[q.id]);
@@ -5934,10 +6111,10 @@ function renderSolve(){
       else { cls = "no"; txt = "틀렸어요"; }
       h += '<div class="banner '+cls+'">'+(cls === "ok" ? ICON.o : ICON.x)+'<span>'+txt+'</span></div>' + mineHTML(q, f, inp, r);
     }
-    h += '<h3 class="ah">정답</h3>' + q.ans.map(a => '<div class="ans-line">'+esc(a)+'</div>').join("");
+    h += '<h3 class="ah">정답'+(ansfix[q.id] ? ' <span class="pill amber">내가 고친 정답</span>' : '')+'</h3>' + q.ans.map(a => '<div class="ans-line">'+esc(a)+'</div>').join("");
     if(q.note) h += '<p class="ans-note">'+esc(q.note)+'</p>';
-    h += figs(imgNames(q,"a")) + verifyHTML(q);
-    if(EXPL[q.id]) h += '<div class="explain"><h3>해설</h3><div class="body">'+fmtExpl(EXPL[q.id])+'</div></div>';
+    h += figs(imgNames(q,"a")) + verifyHTML(q) + fixHTML(q, f);
+    if(explOf(q)) h += '<div class="explain"><h3>해설</h3><div class="body">'+fmtExpl(explOf(q))+'</div></div>';
     h += topicsHTML(q);
     if(s.learnAsk[q.id]){
       const bad = f.fields.map((fd,i) => i).filter(i => r.per && r.per[i] === false);
@@ -6040,7 +6217,7 @@ function renderCardResult(){
 
 /* ---- 화면: 기록 백업과 설정 ---- */
 function exportObj(){
-  return {app:"jcs", v:2, saved:new Date().toISOString(), progress:progress, flags:flags, att:att, notes:notes, learn:learn, cards:cards, chats:chats, settings:settings};
+  return {app:"jcs", v:2, saved:new Date().toISOString(), progress:progress, flags:flags, att:att, notes:notes, learn:learn, cards:cards, chats:chats, ansfix:ansfix, aiq:aiqStore.qs, settings:settings};
 }
 function importText(text){
   let o;
@@ -6056,12 +6233,24 @@ function importText(text){
   Object.entries(obj(o.cards)).forEach(([id,v]) => { if(BY_ID[id] && (v === "k" || v === "u")) cd[id] = v; });
   const ch = {};
   Object.entries(obj(o.chats)).forEach(([id,arr]) => { if(!BY_ID[id] || !Array.isArray(arr)) return; const c = arr.filter(m => m && (m.r === "u" || m.r === "m") && typeof m.t === "string" && m.t.trim()).map(m => ({r:m.r, t:m.t.slice(0, 8000)})).slice(-40); if(c.length) ch[id] = c; });
+  const af = {};
+  Object.entries(obj(o.ansfix)).forEach(([id, fx]) => {
+    if(!BY_ID[id] || !fx) return;
+    const a = Array.isArray(fx.ans) ? fx.ans.filter(x => typeof x === "string" && x.trim()).map(x => x.slice(0, 300)).slice(0, 30) : [];
+    if(!a.length) return;
+    const e = {ans: a};
+    if(Array.isArray(fx.key) && fx.key.every(x => typeof x === "string") && SPEC[id] && SPEC[id].mode && SPEC[id].mode !== "text") e.key = fx.key.slice(0, 20);
+    af[id] = e;
+  });
+  replaceFixes(af);
+  const aq = (Array.isArray(o.aiq) ? o.aiq : []).map(cleanAiq).filter(Boolean);
+  setAiq(aq);
   progress = p; flags = fl; att = a; notes = nt; learn = lr; cards = cd; chats = ch;
   settings = Object.assign({ln:true}, obj(o.settings)); settings.ln = settings.ln !== false;
   const all = {progress:progress, flags:flags, att:att, notes:notes, learn:learn, cards:cards, chats:chats, settings:settings};
   Object.keys(all).forEach(k => save(k, all[k]));
   Object.keys(FORMS).forEach(k => delete FORMS[k]); Object.keys(HAY).forEach(k => delete HAY[k]);
-  return {ok:true, msg:"불러왔어요. 푼 기록 "+Object.keys(p).length+"개, 체크 "+Object.keys(fl).length+"개, 메모 "+Object.keys(nt).length+"개, 카드 "+Object.keys(cd).length+"장, 인정한 답 "+Object.keys(lr).length+"문제, AI 대화 "+Object.keys(ch).length+"문제"};
+  return {ok:true, msg:"불러왔어요. 푼 기록 "+Object.keys(p).length+"개, 체크 "+Object.keys(fl).length+"개, 메모 "+Object.keys(nt).length+"개, 카드 "+Object.keys(cd).length+"장, 인정한 답 "+Object.keys(lr).length+"문제, 고친 정답 "+Object.keys(af).length+"문제, AI 예상문제 "+aq.length+"개, AI 대화 "+Object.keys(ch).length+"문제"};
 }
 function renderData(){
   const vc = {}; ALL.forEach(q => (VERIFY[q.id] || ["src"]).forEach(k => { vc[k] = (vc[k] || 0) + 1; }));
@@ -6082,6 +6271,9 @@ function renderData(){
   h += sec("보기 설정", '<label class="chk"><input type="checkbox" data-setting="ln" '+(settings.ln ? "checked" : "")+'>코드에 줄 번호 표시</label>');
   h += sec("인정한 답 ("+lrows.length+")", '<p class="d">자동 채점에서 틀림으로 나왔지만 맞는 표현이라서 인정한 답이에요. 같은 답을 쓰면 다음부터 정답으로 처리돼요.</p>'
     + (lrows.length ? lrows.map(r => '<div class="lrow"><span><b>'+esc(BY_ID[r.id].label)+'</b> '+esc(r.v)+'</span><button class="btn sm" data-act="learnDel" data-id="'+r.id+'" data-i="'+r.i+'" data-v="'+esc(r.v)+'">삭제</button></div>').join("") : '<p class="d" style="margin:0">아직 없어요.</p>'));
+  const frows = Object.keys(ansfix).filter(id => BY_ID[id]).sort((a, b) => POS[a] - POS[b]);
+  h += sec("내가 고친 정답 ("+frows.length+")", '<p class="d">풀이 화면의 "정답 고치기"로 바꾼 정답이에요. 되돌리면 원래 정답으로 돌아가요.</p>'
+    + (frows.length ? frows.map(id => '<div class="lrow"><span><b>'+esc(BY_ID[id].label)+'</b> '+esc(ansfix[id].ans.join(" / ").slice(0, 60))+'</span><button class="btn sm" data-act="fixRevertId" data-id="'+id+'">되돌리기</button></div>').join("") : '<p class="d" style="margin:0">아직 없어요.</p>'));
   h += sec("정답 검증 현황", '<p class="d">정답을 어떻게 확인했는지 문제마다 표시해요. 한 문제가 여러 방식으로 확인된 경우도 있어요.</p>'
     + Object.keys(VLABEL).map(k => '<div class="vi" style="display:flex;gap:8px;align-items:baseline;margin:6px 0;font-size:14px"><span class="vb '+(k === "src" ? "src" : "")+'">'+VLABEL[k][0]+'</span><span>'+(vc[k] || 0)+'문제. '+VLABEL[k][1]+'</span></div>').join("")
     + '<div class="vi" style="display:flex;gap:8px;align-items:baseline;margin:6px 0;font-size:14px"><span class="vb warn">확인 필요</span><span>'+Object.keys(VNOTE).length+'문제. 원문 표기가 특이하거나 코드에 오류가 있는 경우예요.</span></div>');
@@ -6121,6 +6313,49 @@ function renderCheck(){
 }
 
 /* =====================================================================
+   이어서 풀기 / 뒤로가기
+   ===================================================================== */
+function saveResume(){
+  const s = state.session;
+  if(!s || state.screen !== "solve") return;
+  const keep = o => { const r = {}; s.list.forEach(q => { if(o[q.id] !== undefined) r[q.id] = o[q.id]; }); return r; };
+  resume = {ids: s.list.map(q => q.id), i: s.i, label: s.label || "", st: keep(s.st), res: keep(s.res), inp: keep(s.inp), last: keep(s.last), counted: keep(s.counted), at: Date.now()};
+  save("resume", resume);
+}
+function clearResume(){ resume = null; try{ localStorage.removeItem(KEYS.resume); }catch(e){} }
+function resumeInfo(){
+  if(!resume || !Array.isArray(resume.ids)) return null;
+  const list = resume.ids.map(findQ).filter(Boolean);
+  if(!list.length) return null;
+  let i = list.findIndex(q => q.id === resume.ids[resume.i | 0]);
+  if(i < 0) i = 0;
+  return {list: list, i: i};
+}
+function resumeCardHTML(){
+  const r = resumeInfo();
+  if(!r) return "";
+  const q = r.list[r.i], done = r.list.filter(x => resume.res && resume.res[x.id]).length;
+  return '<section class="card resume"><div class="rtxt"><b>이어서 풀기</b><p>' + esc(resume.label || "풀던 문제") + ' ' + (r.i + 1) + ' / ' + r.list.length + '번째, ' + esc(q.label) + (done ? ' (' + done + '문제 채점함)' : '') + '</p></div>'
+    + '<div class="rbt"><button class="btn primary sm" data-act="resumeGo">이어서 풀기</button><button class="link" data-act="resumeClear">지우기</button></div></section>';
+}
+let histPushed = false, skipPop = false;
+const SUBSCREENS = ["solve", "card", "result", "cardResult", "check"];
+function syncHistory(){
+  if(SUBSCREENS.indexOf(state.screen) >= 0 && !histPushed){
+    try{ history.pushState({jcs: 1}, ""); histPushed = true; }catch(e){}
+  }
+}
+function leaveToHome(){
+  state.screen = "home"; state.session = null; state.cs = null; state.dataMsg = null; state.navOpen = false; state.chatOpen = false;
+  render(); try{ window.scrollTo(0, 0); }catch(e){}
+}
+window.addEventListener("popstate", () => {
+  if(skipPop){ skipPop = false; return; }
+  histPushed = false;
+  if(SUBSCREENS.indexOf(state.screen) >= 0) leaveToHome();
+});
+
+/* =====================================================================
    동작
    ===================================================================== */
 function render(){
@@ -6132,24 +6367,30 @@ function render(){
   else if(sc === "cardResult") renderCardResult();
   else if(sc === "data") renderData();
   else if(sc === "check") renderCheck();
+  if(sc === "solve") saveResume(); else if(sc === "result") clearResume();
   renderChat();
+  syncHistory();
 }
 function keepScroll(){ const y = window.scrollY; render(); try{ window.scrollTo(0,y); }catch(e){} }
-function newSession(list, at){
-  state.session = {list:list, i:at || 0, inp:{}, st:{}, res:{}, last:{}, msg:{}, counted:{}, learnAsk:{}, memoOpen:{}, justGraded:null, focusNext:true, focusMemo:false};
+const MODE_LABEL = {rounds:"회차별", areas:"영역별", random:"무작위", review:"복습", ai:"AI 예상문제"};
+function newSession(list, at, label){
+  state.session = {label: label || MODE_LABEL[state.mode] || "문제 풀이", list:list, i:at || 0, inp:{}, st:{}, res:{}, last:{}, msg:{}, counted:{}, learnAsk:{}, memoOpen:{}, fixOpen:{}, fixMsg:{}, fixErr:{}, justGraded:null, focusNext:true, focusMemo:false};
   state.screen = "solve";
 }
 function toggle(set, k){ if(set.has(k)) set.delete(k); else set.add(k); }
 function curQ(){ const s = state.session; return s.list[s.i]; }
 function setResult(q, v){
   const s = state.session;
-  const a = att[q.id] || (att[q.id] = [0,0]);
   const prev = s.counted[q.id];
-  if(prev === undefined){ a[0]++; if(v === "o") a[1]++; }
-  else if(prev !== v){ a[1] += v === "o" ? 1 : -1; }
+  if(!q.ai){
+    const a = att[q.id] || (att[q.id] = [0,0]);
+    if(prev === undefined){ a[0]++; if(v === "o") a[1]++; }
+    else if(prev !== v){ a[1] += v === "o" ? 1 : -1; }
+    progress[q.id] = v;
+    save("progress", progress); save("att", att);
+  }
   s.counted[q.id] = v;
-  s.res[q.id] = v; progress[q.id] = v; s.justGraded = q.id;
-  save("progress", progress); save("att", att);
+  s.res[q.id] = v; s.justGraded = q.id;
 }
 function go(delta){
   const s = state.session;
@@ -6158,11 +6399,11 @@ function go(delta){
   if(n >= s.list.length){ state.screen = "result"; render(); return; }
   s.i = n; s.focusNext = true; render();
 }
-function openList(ids, id){
-  const list = ids.map(x => BY_ID[x]).filter(Boolean);
+function openList(ids, id, label){
+  const list = ids.map(findQ).filter(Boolean);
   const i = Math.max(0, list.findIndex(q => q.id === id));
   if(!list.length) return;
-  newSession(list, i); render();
+  newSession(list, i, label); render();
 }
 function copyText(text, el){
   try{
@@ -6209,17 +6450,20 @@ const actions = {
   toggleQNote(){ state.qNote = !state.qNote; render(); },
   start(){ const l = buildList(); if(!l.length) return; newSession(l); render(); },
   openAt(d){ const l = pickSet(); const i = l.findIndex(q => q.id === d.id); if(i < 0) return; newSession(l, i); render(); },
-  openLast(d){ openList(state.lastList || [], d.id); },
-  openIds(d){ openList(d.ids.split(","), d.id); },
-  openTopicQ(d){ openList(TOPICS[+d.t].ids, d.id); },
-  topicStart(d){ openList(TOPICS[+d.t].ids, TOPICS[+d.t].ids[0]); },
+  openLast(d){ openList(state.lastList || [], d.id, "검색 결과"); },
+  openIds(d){ openList(d.ids.split(","), d.id, "자주 틀리는 문제"); },
+  openTopicQ(d){ openList(TOPICS[+d.t].ids, d.id, "빈출 개념"); },
+  topicStart(d){ openList(TOPICS[+d.t].ids, TOPICS[+d.t].ids[0], "빈출 개념"); },
   statStart(d){
     let base = ALL.filter(q => d.kind === "area" ? q.area === d.key : d.kind === "type" ? q.type === d.key : rk(q) === d.key);
     base = d.w === "wrong" ? base.filter(q => progress[q.id] === "x") : base.filter(q => !progress[q.id]);
     if(!base.length) return;
-    newSession(base); render();
+    newSession(base, 0, "통계"); render();
   },
-  home(){ state.screen = "home"; state.session = null; state.cs = null; state.dataMsg = null; state.navOpen = false; state.chatOpen = false; render(); try{ window.scrollTo(0,0); }catch(e){} },
+  home(){
+    if(histPushed){ histPushed = false; skipPop = true; setTimeout(() => { skipPop = false; }, 600); try{ history.back(); }catch(e){ skipPop = false; } }
+    leaveToHome();
+  },
   toggleFlag(){
     const q = state.screen === "card" ? state.cs.list[state.cs.i] : curQ();
     if(flags[q.id]) delete flags[q.id]; else flags[q.id] = true;
@@ -6298,7 +6542,7 @@ const actions = {
   retryWrong(){
     const s = state.session;
     const l = s.list.filter(q => s.res[q.id] === "x");
-    if(l.length){ newSession(l); render(); }
+    if(l.length){ newSession(l, 0, "틀린 문제 다시 풀기"); render(); }
   },
   /* 카드 */
   startCards(){ const l = cardList(); if(!l.length) return; state.cs = {list:l, i:0, flip:false, mark:{}}; state.screen = "card"; render(); },
@@ -6421,6 +6665,7 @@ function myAnswerText(q){
   return parts.filter(Boolean).join(" / ");
 }
 function verifyText(q){
+  if(q.ai) return "AI가 만든 문제라 정답이 틀렸을 수 있어. 근거가 분명하면 정답이 틀렸다고 말해줘.";
   const v = VERIFY[q.id] || ["src"], out = [];
   v.forEach(k => {
     if(k === "run") out.push("코드를 실제로 실행해서 확인된 정답이야. 뒤집지 마.");
@@ -6441,7 +6686,7 @@ function contextBlock(q){
   if(q.code) t += "\n\n(코드의 줄 번호는 첫 줄이 1번이야.)";
   if(q.img) t += "\n\n(이 문제에는 이미지가 있어.)";
   t += "\n\n[정답]\n" + q.ans.join("\n");
-  if(EXPL[q.id]) t += "\n\n[해설 참고]\n" + EXPL[q.id].replace(/\{\{|\}\}/g, "");
+  if(explOf(q)) t += "\n\n[해설 참고]\n" + explOf(q).replace(/\{\{|\}\}/g, "");
   t += "\n\n[정답 확인 상태]\n" + verifyText(q);
   t += "\n\n[학생 상태]\n";
   if(state.screen === "solve" && state.session){
@@ -6692,7 +6937,45 @@ function aiCardHTML(){
     + (hasKey ? '<div class="drow" style="margin-top:14px"><button class="btn sm danger" data-act="aiDelKey">키 삭제</button></div>' : '')
     + '</section>';
 }
+function regradeCurrent(q, msg){
+  const s = state.session;
+  delete s.fixOpen[q.id];
+  let note = msg;
+  if(s.st[q.id] === "graded"){
+    const r = gradeQ(q, formOf(q), getInp(q.id));
+    if(!r.empty){ s.last[q.id] = r; setResult(q, r.ok ? "o" : "x"); note += " 내 답을 다시 채점했더니 " + (r.ok ? "정답" : "오답") + "이에요."; }
+  }
+  s.fixMsg[q.id] = note; s.fixErr[q.id] = false;
+  keepScroll();
+}
 Object.assign(actions, {
+  fixOpen(){ const s = state.session, q = curQ(); s.fixOpen[q.id] = true; delete s.fixMsg[q.id]; keepScroll(); },
+  fixCancel(){ const s = state.session, q = curQ(); delete s.fixOpen[q.id]; delete s.fixMsg[q.id]; keepScroll(); },
+  fixSave(){
+    const s = state.session, q = curQ(), f = formOf(q), el = document.getElementById("fixtext");
+    if(!el) return;
+    const bad = m => { s.fixMsg[q.id] = m; s.fixErr[q.id] = true; keepScroll(); };
+    let fx;
+    if(f.mode === "text"){
+      const lines = linesOf(el.value);
+      if(!lines.length) return bad("정답을 한 줄 이상 적어 주세요.");
+      if(lines.length > 30 || lines.some(l => l.length > 300)) return bad("정답이 너무 길어요. 30줄, 한 줄 300자 안으로 적어 주세요.");
+      fx = {ans: lines};
+    } else {
+      const key = el.value.split(/[,，\n]/).map(x => x.trim()).filter(Boolean), opts = f.opts.map(o => o.v);
+      if(!key.length) return bad("정답을 한 개 이상 적어 주세요.");
+      const wrong = key.filter(k => opts.indexOf(k) < 0);
+      if(wrong.length) return bad("고를 수 없는 값이에요: " + wrong.join(", ") + ". 고를 수 있는 값은 " + opts.join(", ") + "예요.");
+      if(f.mode === "each" && key.length !== f.labels.length) return bad("칸이 " + f.labels.length + "개라서 값도 " + f.labels.length + "개를 적어야 해요.");
+      if(f.mode === "pick" && new Set(key).size !== key.length) return bad("같은 값이 두 번 들어갔어요.");
+      fx = {key: key, ans: genAnsFromKey(f, key)};
+    }
+    if(q.ai){ q.ans = fx.ans.slice(); delete FORMS[q.id]; saveAiq(); regradeCurrent(q, "정답을 고쳤어요."); return; }
+    ansfix[q.id] = fx; save("ansfix", ansfix); applyFix(q.id);
+    regradeCurrent(q, "정답을 고쳤어요.");
+  },
+  fixRevert(){ const q = curQ(); revertFix(q.id); regradeCurrent(q, "원래 정답으로 되돌렸어요."); },
+  fixRevertId(d){ revertFix(d.id); render(); },
   chatOpen(){ state.chatOpen = true; state.chatErr = ""; renderChat(true); },
   aiLink(){
     if(!aiReady()) return;
@@ -6748,6 +7031,144 @@ Object.assign(actions, {
     if(!confirm("저장된 Gemini 키를 이 기기에서 삭제할까요?")) return;
     ai.key = ""; save("ai", ai); state.aiMsg = {err: false, t: "키를 삭제했어요."}; render();
   }
+});
+
+/* =====================================================================
+   AI 예상문제 출제
+   - 내 Gemini 키로 기출 형식의 새 문제를 만들어요.
+   - 만든 문제는 이 기기에 최근 60개까지 저장돼요.
+   ===================================================================== */
+const CODE_AREAS = ["C", "Java", "Python", "SQL"];
+const AIQ_TYPES = [["concept", "개념"], ["code", "코드 해석"], ["fill", "코드 빈칸 채우기"]];
+const AIQ_LEVELS = [["easy", "쉽게"], ["normal", "기출 수준"], ["hard", "조금 어렵게"]];
+const AIQ_AREAS = AREAS.filter(a => a !== "기타");
+
+function cleanAiq(x){
+  if(!x || typeof x.id !== "string" || !/^ai-[a-z0-9-]{3,40}$/.test(x.id) || typeof x.stem !== "string" || !x.stem.trim()) return null;
+  const ans = (Array.isArray(x.ans) ? x.ans : []).filter(a => typeof a === "string" && a.trim()).map(a => a.slice(0, 200)).slice(0, 8);
+  if(!ans.length) return null;
+  const clip = (s, m) => typeof s === "string" ? s.slice(0, m) : "";
+  const n = Number.isInteger(x.n) && x.n > 0 ? x.n : 1, seq = Number.isInteger(x.seq) && x.seq > 0 ? x.seq : n;
+  return {id: x.id, n: n, seq: seq, area: AREAS.indexOf(x.area) >= 0 ? x.area : "기타", type: ["concept", "code", "fill"].indexOf(x.type) >= 0 ? x.type : "concept",
+    stem: clip(x.stem, 600), extra: clip(x.extra, 1200), code: clip(x.code, 3000), after: "", ans: ans, expl: clip(x.expl, 1500),
+    ai: true, year: 0, round: 0, src: "", label: "AI 예상문제 #" + seq};
+}
+function saveAiq(){ save("aiq", aiqStore); }
+function setAiq(list){
+  Object.keys(AIQ).forEach(k => delete AIQ[k]);
+  aiqStore = {qs: list.slice(-60), seq: Math.max(aiqStore.seq || 0, 0)};
+  aiqStore.qs.forEach(q => { AIQ[q.id] = q; });
+  saveAiq();
+}
+function aiqExamples(o){
+  const pool = ALL.filter(q => q.area === o.area && q.type === o.type && !q.img && !q.aimg);
+  return shuffle(pool.slice()).slice(0, 2).map((q, i) =>
+    "[예시 " + (i + 1) + "]\n문제: " + q.stem + (q.extra ? "\n" + q.extra.slice(0, 600) : "") + (q.code ? "\n코드:\n" + q.code.slice(0, 900) : "") + "\n정답: " + q.ans.join(" / ")).join("\n\n");
+}
+function buildAiqBody(o){
+  const typeName = {concept: "개념(용어나 짧은 답 쓰기)", code: "코드 해석(코드를 읽고 실행 결과 쓰기)", fill: "코드 빈칸 채우기(코드의 빈칸에 들어갈 답 쓰기)"}[o.type];
+  const lang = {C: "C언어", Java: "Java", Python: "Python", SQL: "SQL"}[o.area] || o.area;
+  const level = {easy: "기출보다 조금 쉽게", normal: "기출과 같은 수준으로", hard: "기출보다 조금 어렵게"}[o.level];
+  const sys = "너는 정보처리기사 실기 시험 출제위원이야. 한국어로, 실제 기출 문제와 같은 형식과 말투의 새 문제를 만들어.\n"
+    + "출력은 JSON 하나만 써. 설명, 인사말, 코드펜스(```)는 쓰지 마.\n"
+    + "형식: {\"questions\":[{\"stem\":\"문제 지시문\",\"code\":\"코드(코드 문제만)\",\"extra\":\"보기나 조건(필요할 때만)\",\"ans\":[\"정답 한 줄씩\"],\"explain\":\"풀이\"}]}\n"
+    + "문자열 안의 줄바꿈은 \\n으로 써.";
+  const rules = "[규칙]\n"
+    + "- 문제는 정확히 " + o.count + "개, 서로 다른 소재로 만들어.\n"
+    + "- 실제 기출 문제를 그대로 베끼지 말고 새로 만들어. 그림, 표 이미지, 입력(scanf, input 등)이 필요한 문제는 만들지 마.\n"
+    + "- 정답은 하나로 확정되고 짧아야 해. 정답이 여러 칸이면 ans 배열에 \"1. 값\", \"2. 값\"처럼 한 줄씩 써. 코드 출력 문제는 출력되는 줄을 그대로 한 줄씩 써.\n"
+    + (o.type === "concept" ? "- 개념 문제의 정답은 용어 1~3개야. 같은 뜻의 다른 표기는 \"A 또는 B\"로 한 줄에 써.\n" : "")
+    + (o.type === "code" ? "- 코드는 25줄 이내로 짧게, 출력이 확실한 코드만 써. 코드를 한 줄씩 직접 추적해서 출력을 검증한 뒤 정답을 써. 확신이 없으면 그 문제는 만들지 마.\n" : "")
+    + (o.type === "fill" ? "- 코드의 빈칸은 ( 1 ), ( 2 )처럼 표시하고, 정답은 \"1. 값\", \"2. 값\" 형식으로 써. 코드는 25줄 이내로 짧게 써.\n" : "")
+    + "- explain에는 정답의 근거를 3~6줄로 써.";
+  const ex = aiqExamples(o);
+  const user = "영역: " + o.area + (CODE_AREAS.indexOf(o.area) >= 0 ? " (" + lang + ")" : "") + "\n유형: " + typeName + "\n난이도: " + level + "\n문제 수: " + o.count + "\n\n" + (ex ? "[기출 예시]\n" + ex + "\n\n" : "") + rules;
+  return {systemInstruction: {parts: [{text: sys}]}, contents: [{role: "user", parts: [{text: user}]}]};
+}
+function parseAiq(text, o){
+  let s = String(text || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim(), obj = null;
+  const tryParse = x => { try{ return JSON.parse(x); }catch(e){ return null; } };
+  obj = tryParse(s);
+  if(obj == null){ const a = s.indexOf("{"), b = s.lastIndexOf("}"); if(a >= 0 && b > a) obj = tryParse(s.slice(a, b + 1)); }
+  if(obj == null){ const a = s.indexOf("["), b = s.lastIndexOf("]"); if(a >= 0 && b > a) obj = tryParse(s.slice(a, b + 1)); }
+  const arr = Array.isArray(obj) ? obj : (obj && (obj.questions || obj.items)) || [];
+  if(!Array.isArray(arr)) return [];
+  const clip = (x, m) => typeof x === "string" ? x.slice(0, m) : "";
+  return arr.map(it => {
+    if(!it || typeof it.stem !== "string" || it.stem.trim().length < 5) return null;
+    const ans = (Array.isArray(it.ans) ? it.ans : typeof it.ans === "string" ? it.ans.split("\n") : []).map(x => String(x).trim()).filter(Boolean).slice(0, 8).map(x => x.slice(0, 200));
+    if(!ans.length) return null;
+    const code = clip(it.code, 3000).replace(/\s+$/, "");
+    if((o.type === "code" || o.type === "fill") && !code) return null;
+    return {stem: clip(it.stem.trim(), 600), extra: clip(it.extra, 1200).trim(), code: o.type === "concept" ? "" : code, ans: ans, expl: clip(it.explain || it.expl, 1500).trim()};
+  }).filter(Boolean).slice(0, o.count);
+}
+async function aiqGenerate(){
+  if(state.aiqBusy) return;
+  if(!aiReady()){ state.aiqErr = "먼저 더보기에서 Gemini 키를 설정해 주세요."; render(); return; }
+  const o = Object.assign({}, state.aiq);
+  state.aiqBusy = true; state.aiqErr = ""; render();
+  try{
+    const data = await gem("/models/" + encodeURIComponent(ai.model || AI_DEFAULT_MODEL) + ":generateContent", buildAiqBody(o));
+    const items = parseAiq(extractText(data), o);
+    if(!items.length) throw Object.assign(new Error("parse"), {parse: true});
+    const base = (aiqStore.seq || 0), stamp = Date.now().toString(36);
+    const qs = items.map((it, i) => cleanAiq(Object.assign({id: "ai-" + stamp + "-" + (i + 1), n: i + 1, seq: base + i + 1, area: o.area, type: o.type}, it, {expl: it.expl})));
+    const good = qs.filter(Boolean);
+    if(!good.length) throw Object.assign(new Error("parse"), {parse: true});
+    aiqStore = {qs: aiqStore.qs.concat(good).slice(-60), seq: base + good.length};
+    Object.keys(AIQ).forEach(k => delete AIQ[k]);
+    aiqStore.qs.forEach(q => { AIQ[q.id] = q; });
+    saveAiq();
+    state.aiqBusy = false;
+    newSession(good.map(q => AIQ[q.id] || q), 0, "AI 예상문제"); render();
+  }catch(e){
+    state.aiqErr = e && e.parse ? "AI가 문제를 올바른 형식으로 만들지 못했어요. 한 번 더 시도해 주세요." : errMsg(e);
+    state.aiqBusy = false; render();
+  }
+}
+function aiChip(act, v, label, on, disabled){
+  return '<button class="chip" data-act="' + act + '" data-v="' + v + '" aria-pressed="' + (on ? "true" : "false") + '" ' + (disabled ? "disabled" : "") + '>' + esc(label) + '</button>';
+}
+function panelAi(){
+  const o = state.aiq, codeOk = CODE_AREAS.indexOf(o.area) >= 0, n = aiqStore.qs.length;
+  let h = "";
+  if(state.aiqErr) h += '<div class="dmsg err">' + esc(state.aiqErr) + '</div>';
+  if(state.aiqBusy) h += '<div class="dmsg">AI가 문제를 만들고 있어요. 10~30초쯤 걸려요. 이 화면을 그대로 두세요.</div>';
+  if(!aiReady()){
+    h += cardSec("AI 출제는 Gemini 키가 필요해요", '<p class="note">내 Gemini 키로 기출 형식의 새 문제를 만들어요. 키는 더보기에서 한 번만 설정하면 돼요. 무료로 만들 수 있고 2분이면 돼요.</p><div class="drow"><button class="btn sm primary" data-act="aiqSetup">키 설정하러 가기</button></div>');
+  } else {
+    h += cardSec("AI 예상문제", '<p class="note" style="margin:0">내 Gemini 키로 기출 형식의 새 문제를 만들어요. AI가 만든 문제는 정답이 틀릴 수 있어서 따로 표시해요. 코드 문제의 출력은 직접 확인해 보세요.</p>');
+  }
+  h += cardSec("영역", '<div class="chips">' + AIQ_AREAS.map(a => aiChip("aiqArea", esc(a), a, o.area === a, false)).join("") + '</div>');
+  h += cardSec("유형", '<div class="chips">' + AIQ_TYPES.map(t => aiChip("aiqType", t[0], t[1], o.type === t[0], t[0] !== "concept" && !codeOk)).join("") + '</div>'
+    + (codeOk ? "" : '<p class="note" style="margin:10px 0 0">코드 유형은 C, Java, Python, SQL 영역에서만 고를 수 있어요.</p>'));
+  h += cardSec("문제 수", '<div class="chips">' + [3, 5, 10].map(c => aiChip("aiqCount", c, c + "문제", o.count === c, false)).join("") + '</div>');
+  h += cardSec("난이도", '<div class="chips">' + AIQ_LEVELS.map(l => aiChip("aiqLevel", l[0], l[1], o.level === l[0], false)).join("") + '</div>');
+  h += cardSec("이전에 만든 예상문제 (" + n + ")", n
+    ? '<p class="note">최근 60개까지 이 기기에 저장돼요.</p><div class="drow"><button class="btn sm primary" data-act="aiqPlay">저장된 문제 풀기</button><button class="btn sm danger" data-act="aiqClear">전부 지우기</button></div>'
+    : '<p class="note" style="margin:0">아직 없어요.</p>');
+  return h;
+}
+Object.assign(actions, {
+  aiqArea(d){ state.aiq.area = d.v; if(CODE_AREAS.indexOf(d.v) < 0) state.aiq.type = "concept"; render(); },
+  aiqType(d){ state.aiq.type = d.v; render(); },
+  aiqCount(d){ state.aiq.count = +d.v; render(); },
+  aiqLevel(d){ state.aiq.level = d.v; render(); },
+  aiqGen(){ aiqGenerate(); },
+  aiqSetup(){ state.screen = "data"; state.dataMsg = null; render(); try{ window.scrollTo(0, 0); }catch(e){} },
+  aiqPlay(){ const l = aiqStore.qs.slice().reverse(); if(l.length){ newSession(l, 0, "AI 예상문제"); render(); } },
+  aiqClear(){ if(!confirm("AI가 만든 예상문제를 모두 지울까요?")) return; setAiq([]); render(); },
+  resumeGo(){
+    const r = resumeInfo();
+    if(!r) return;
+    newSession(r.list, r.i, resume.label);
+    const s = state.session, inList = id => r.list.some(q => q.id === id);
+    const pick = (src, dst) => { Object.keys(src || {}).forEach(id => { if(inList(id)) dst[id] = src[id]; }); };
+    pick(resume.st, s.st); pick(resume.res, s.res); pick(resume.inp, s.inp); pick(resume.last, s.last); pick(resume.counted, s.counted);
+    s.focusNext = false; render();
+  },
+  resumeClear(){ clearResume(); render(); }
 });
 
 const $app = document.getElementById("app");
@@ -6818,9 +7239,10 @@ document.addEventListener("keydown", e => {
 });
 
 /* 테스트와 점검을 위해 일부를 밖에 노출 */
-window.__jcs = {importKeyFromHash:importKeyFromHash, ALL:ALL, formOf:formOf, gradeQ:gradeQ, state:state, EXPL:EXPL, SPEC:SPEC, TOPICS:TOPICS, VERIFY:VERIFY, VNOTE:VNOTE,
-  freqOf:freqOf, exportObj:exportObj, buildBody:buildBody, buildSystem:buildSystem, chatSend:chatSend, actions:actions, mdLite:mdLite, errMsg:errMsg, importText:importText, searchHits:searchHits, store:function(){ return {progress:progress, flags:flags, att:att, notes:notes, learn:learn, cards:cards, chats:chats, ai:ai, settings:settings}; }};
+window.__jcs = {parseAiq:parseAiq, buildAiqBody:buildAiqBody, aiqGenerate:aiqGenerate, cleanAiq:cleanAiq, saveResume:saveResume, linesEqual:linesEqual, importKeyFromHash:importKeyFromHash, ALL:ALL, formOf:formOf, gradeQ:gradeQ, state:state, EXPL:EXPL, SPEC:SPEC, TOPICS:TOPICS, VERIFY:VERIFY, VNOTE:VNOTE,
+  freqOf:freqOf, exportObj:exportObj, buildBody:buildBody, buildSystem:buildSystem, chatSend:chatSend, actions:actions, mdLite:mdLite, errMsg:errMsg, importText:importText, searchHits:searchHits, store:function(){ return {progress:progress, flags:flags, att:att, notes:notes, learn:learn, cards:cards, chats:chats, ai:ai, ansfix:ansfix, aiq:aiqStore, resume:resume, settings:settings}; }};
 
+Object.keys(ansfix).forEach(applyFix);
 importKeyFromHash();
 render();
 })();
