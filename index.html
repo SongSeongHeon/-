@@ -348,6 +348,8 @@ pre.code .blank{background:#FFD34D;color:#17233A;box-shadow:none;outline:1.5px s
 .fld label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
 .fld input[type=password],.fld input[type=text]{flex:1;min-width:0;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font:15px var(--sans);background:#fff}
 .fld input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft)}
+.mid{display:block;font:12px/1.4 var(--mono);font-style:normal;color:var(--muted);margin-top:3px}
+.choice[aria-pressed="true"] .mid{color:#4A5E9E}
 .notes{margin:0;padding-left:18px;font-size:13.5px;color:var(--muted);line-height:1.7}
 .notes li{margin:0 0 8px}
 .notes b{color:var(--ink)}
@@ -5519,7 +5521,7 @@ const state = {
   cAreas:new Set(cardAreas), cOrder:"freq", cUnknown:false,
   q:"", qNote:false,
   lastStudy:"rounds", navOpen:false, statOpen:{},
-  chatOpen:false, chatBusy:false, chatErr:"", chatDraft:"", chatKey:"", chatQuick:[], aiMsg:null, aiBusy:false, aiShowKey:false, aiModels:[],
+  chatOpen:false, chatBusy:false, chatErr:"", chatDraft:"", chatKey:"", chatQuick:[], aiMsg:null, aiBusy:false, aiShowKey:false, aiCustom:false,
   session:null, cs:null, dataMsg:null, dataErr:false, showExport:false
 };
 
@@ -6384,21 +6386,18 @@ function errMsg(e){
   if(s === 400) return "요청을 처리하지 못했어요. 모델 이름을 확인해 보세요. (" + m.slice(0, 80) + ")";
   if(s === 401) return "키를 인증하지 못했어요(401). 키를 통째로 다시 복사해 붙여 넣어 보세요. 계속되면 AI Studio에서 새 키를 만들어 다시 시도해 보세요. 키가 삭제됐거나 정지된 건 아닌지도 확인해 주세요.";
   if(s === 403) return "이 키로는 쓸 수 없어요. AI Studio에서 키가 켜져 있는지, 사용 제한이 걸려 있지 않은지 확인해 주세요.";
-  if(s === 404) return "선택한 모델을 찾을 수 없어요. 더보기에서 '모델 목록 불러오기'로 다시 골라 주세요.";
+  if(s === 404) return "선택한 모델을 찾을 수 없어요. 더보기에서 다른 모델을 고르거나, 직접 입력한 이름이 맞는지 확인해 주세요.";
   if(s === 429) return "요청 한도를 넘었어요. 1분쯤 뒤에 다시 시도해 보세요. 계속 안 되면 오늘 무료 한도를 다 쓴 걸 수도 있어요.";
   if(s >= 500) return "Google 서버가 잠시 불안정해요. 잠시 뒤 다시 시도해 주세요.";
   return "연결하지 못했어요. 인터넷 연결을 확인해 주세요. (" + m.slice(0, 60) + ")";
 }
-async function aiLoadModels(){
-  const ver = n => { const m = /^gemini-(\d+(?:\.\d+)?)/.exec(n); return m ? parseFloat(m[1]) : 0; };
-  const rank = n => /flash/.test(n) && !/lite/.test(n) ? 0 : /lite/.test(n) ? 1 : /pro/.test(n) ? 2 : 3;
-  const data = await gem("/models?pageSize=200", null, "GET");
-  return (data.models || [])
-    .filter(m => (m.supportedGenerationMethods || []).indexOf("generateContent") >= 0)
-    .map(m => String(m.name).replace(/^models\//, ""))
-    .filter(n => /^gemini-/.test(n) && !/(embedding|tts|image|live|audio|robotics|computer-use|aqa|native|omni|transcribe|translate|preview-\d)/.test(n))
-    .sort((a, b) => rank(a) - rank(b) || ver(b) - ver(a) || a.localeCompare(b));
-}
+const AI_MODELS = [
+  {id:"gemini-3.5-flash-lite", name:"Gemini 3.5 Flash-Lite", desc:"가장 빠른 답변 제공"},
+  {id:"gemini-3.6-flash", name:"Gemini 3.6 Flash", desc:"무엇이든 도움을 받으세요 (기본)"},
+  {id:"gemini-3.1-pro-preview", name:"Gemini 3.1 Pro", desc:"고급 추론. 느리고 무료 한도가 더 적을 수 있어요"}
+];
+const aiIsCustom = () => state.aiCustom || !AI_MODELS.some(m => m.id === ai.model);
+const MODEL_RE = /^[A-Za-z0-9._\-]{3,80}$/;
 
 /* ---- 문제 정보를 질문에 자동으로 붙이기 ---- */
 function chatQ(){
@@ -6660,7 +6659,6 @@ function importKeyFromHash(){
 function aiCardHTML(){
   const hasKey = aiReady();
   const msg = state.aiMsg ? '<div class="dmsg' + (state.aiMsg.err ? " err" : "") + '">' + esc(state.aiMsg.t) + '</div>' : "";
-  const models = (state.aiModels || []).map(n => '<option value="' + esc(n) + '"></option>').join("");
   return '<section class="card"><div class="card-h"><h2>AI 도우미 (Gemini)</h2><span class="pill ' + (hasKey ? "ok" : "") + '">' + (hasKey ? "키 저장됨" : "키 없음") + '</span></div>'
     + '<p class="d">문제를 풀다가 모르는 부분을 AI에게 바로 물어볼 수 있어요. 각자 자기 Gemini 키를 넣어서 쓰는 방식이라, 내 키는 이 기기의 브라우저에만 저장되고 이 앱의 서버는 없어요.</p>'
     + '<h3 class="mini">키 만드는 방법 (처음 한 번, 2분)</h3>'
@@ -6672,9 +6670,12 @@ function aiCardHTML(){
     + '<li>이제 문제 화면의 <b>AI에게 물어보기</b> 버튼이나 위쪽 반짝이 아이콘으로 질문할 수 있어요.</li></ol>'
     + '<div class="fld"><label for="aikey">Gemini API 키</label><div class="drow" style="flex-wrap:nowrap"><input id="aikey" type="' + (state.aiShowKey ? "text" : "password") + '" placeholder="' + (hasKey ? "저장된 키 끝 4자리 " + esc(ai.key.slice(-4)) + " (바꾸려면 새 키를 붙여 넣어요)" : "AQ.로 시작하는 키를 붙여 넣어요") + '" autocomplete="off" autocapitalize="off" spellcheck="false">'
     + '<button class="btn sm" data-act="aiShowKey" style="flex:none">' + (state.aiShowKey ? "숨기기" : "보기") + '</button></div></div>'
-    + '<div class="fld"><label for="aimodel">모델</label><input id="aimodel" type="text" list="aimodels" value="' + esc(ai.model || AI_DEFAULT_MODEL) + '" autocomplete="off" autocapitalize="off" spellcheck="false"><datalist id="aimodels">' + models + '</datalist>'
-    + '<p class="d" style="margin:6px 0 0">기본값은 Gemini 앱의 기본 Flash와 같은 <b>gemini-3.6-flash</b>예요. 그대로 두면 돼요. 모델은 시기마다 바뀌니, 안 될 때는 <b>모델 목록 불러오기</b>로 지금 쓸 수 있는 모델을 골라요. (더 가볍게 쓰려면 <b>gemini-3.5-flash-lite</b>)</p></div>'
-    + '<div class="drow" style="margin:0 0 14px"><button class="btn sm primary" data-act="aiSave">저장</button><button class="btn sm" data-act="aiTest" ' + (state.aiBusy ? "disabled" : "") + '>' + (state.aiBusy ? "확인 중..." : "연결 테스트") + '</button><button class="btn sm" data-act="aiModels" ' + (state.aiBusy ? "disabled" : "") + '>모델 목록 불러오기</button></div>'
+    + '<div class="fld"><label>모델</label><div class="choices">'
+    + AI_MODELS.map(m => '<button class="choice" data-act="aiPickModel" data-v="' + m.id + '" aria-pressed="' + (!aiIsCustom() && ai.model === m.id ? "true" : "false") + '"><i class="ci">' + (!aiIsCustom() && ai.model === m.id ? "✓" : "") + '</i><span class="ct"><b>' + m.name + '</b><span>' + m.desc + '</span><em class="mid">' + m.id + '</em></span></button>').join("")
+    + '<button class="choice" data-act="aiCustomModel" aria-pressed="' + (aiIsCustom() ? "true" : "false") + '"><i class="ci">' + (aiIsCustom() ? "✓" : "") + '</i><span class="ct"><b>직접 입력</b><span>원하는 모델 이름을 적어요</span></span></button></div>'
+    + (aiIsCustom() ? '<div style="margin-top:10px"><input id="aimodel" type="text" value="' + esc(AI_MODELS.some(m => m.id === ai.model) ? "" : (ai.model || "")) + '" placeholder="예: gemini-3.8-flash" autocomplete="off" autocapitalize="off" spellcheck="false"><p class="d" style="margin:6px 0 0">AI Studio나 Gemini API 문서의 모델 이름(소문자와 하이픈)을 그대로 적고 <b>저장</b>을 눌러요.</p></div>' : '')
+    + '</div>'
+    + '<div class="drow" style="margin:0 0 14px"><button class="btn sm primary" data-act="aiSave">저장</button><button class="btn sm" data-act="aiTest" ' + (state.aiBusy ? "disabled" : "") + '>' + (state.aiBusy ? "확인 중..." : "연결 테스트") + '</button></div>'
     + msg
     + '<label class="chk" style="margin:0 0 10px"><input type="checkbox" data-ai="hint" ' + (ai.hint ? "checked" : "") + '>정답을 보기 전에는 힌트 위주로 알려주기</label>'
     + '<label class="chk" style="margin:0 0 14px"><input type="checkbox" data-ai="img" ' + (ai.img ? "checked" : "") + '>이미지 문제는 이미지도 같이 보내기</label>'
@@ -6702,32 +6703,44 @@ Object.assign(actions, {
     render();
   },
   aiShowKey(){ const el = document.getElementById("aikey"); state.aiDraftKey = el ? el.value : ""; state.aiShowKey = !state.aiShowKey; render(); const n = document.getElementById("aikey"); if(n && state.aiDraftKey) n.value = state.aiDraftKey; },
+  aiPickModel(d){
+    const el = document.getElementById("aikey"), draft = el ? el.value : "";
+    ai.model = d.v; state.aiCustom = false; save("ai", ai);
+    state.aiMsg = {err: false, t: "모델을 " + d.v + "로 바꿨어요."};
+    render(); const n = document.getElementById("aikey"); if(n && draft) n.value = draft;
+  },
+  aiCustomModel(){
+    const el = document.getElementById("aikey"), draft = el ? el.value : "";
+    state.aiCustom = true; state.aiMsg = null;
+    render(); const n = document.getElementById("aikey"); if(n && draft) n.value = draft;
+    const m = document.getElementById("aimodel"); if(m){ try{ m.focus(); }catch(e){} }
+  },
   aiSave(){
-    const k = (document.getElementById("aikey").value || "").replace(/^[\s"'`]+|[\s"'`]+$/g, "");
-    const m = (document.getElementById("aimodel").value || "").trim().replace(/^models\//, "") || AI_DEFAULT_MODEL;
+    const kEl = document.getElementById("aikey");
+    const k = (kEl ? kEl.value : "").replace(/^[\s"'`]+|[\s"'`]+$/g, "");
     if(k && !/^[A-Za-z0-9._\-]{20,}$/.test(k)){ state.aiMsg = {err: true, t: "키 모양이 달라요. AI Studio의 'API 키' 칸에 있는 긴 글자 전체를 한 줄로 복사했는지 확인해 주세요. 키는 보통 AQ.로 시작해요. (예전에 만든 키는 AIza로 시작해요.)"}; render(); return; }
+    let m = ai.model;
+    const mi = document.getElementById("aimodel");
+    if(mi){
+      const v = mi.value.trim().replace(/^models\//, "");
+      if(!v){ state.aiMsg = {err: true, t: "모델 이름을 적어 주세요. 예: gemini-3.8-flash"}; render(); return; }
+      if(!MODEL_RE.test(v)){ state.aiMsg = {err: true, t: "모델 이름 모양이 달라요. 소문자, 숫자, 점, 하이픈만 쓰고 공백 없이 적어 주세요."}; render(); return; }
+      m = v;
+    }
     if(k) ai.key = k;
-    ai.model = m; save("ai", ai);
-    state.aiMsg = {err: false, t: k ? "키를 저장했어요. 이어서 '연결 테스트'를 눌러 확인해 보세요." : "모델을 저장했어요."};
+    ai.model = m; state.aiCustom = !AI_MODELS.some(x => x.id === m) && !!mi; save("ai", ai);
+    state.aiMsg = {err: false, t: (k ? "키를 저장했어요. " : "") + "모델은 " + m + "예요." + (k ? " 이어서 '연결 테스트'를 눌러 확인해 보세요." : "")};
     render();
   },
   async aiTest(){
     if(!aiReady()){ state.aiMsg = {err: true, t: "먼저 키를 붙여 넣고 저장해 주세요."}; render(); return; }
-    const m = (document.getElementById("aimodel").value || "").trim().replace(/^models\//, "") || ai.model || AI_DEFAULT_MODEL;
-    ai.model = m; save("ai", ai);
+    let m = ai.model || AI_DEFAULT_MODEL;
+    const mi = document.getElementById("aimodel");
+    if(mi && mi.value.trim()){ m = mi.value.trim().replace(/^models\//, ""); if(!MODEL_RE.test(m)){ state.aiMsg = {err: true, t: "모델 이름 모양이 달라요. 소문자, 숫자, 점, 하이픈만 쓰고 공백 없이 적어 주세요."}; render(); return; } ai.model = m; save("ai", ai); }
     state.aiBusy = true; state.aiMsg = null; render();
     try{
       const data = await gem("/models/" + encodeURIComponent(m) + ":generateContent", {contents: [{role: "user", parts: [{text: "한국어로 '연결됨' 한 단어만 답해줘."}]}]});
       state.aiMsg = {err: false, t: "연결됐어요. 모델 " + m + "의 응답: " + extractText(data).slice(0, 40)};
-    }catch(e){ state.aiMsg = {err: true, t: errMsg(e)}; }
-    state.aiBusy = false; render();
-  },
-  async aiModels(){
-    if(!aiReady()){ state.aiMsg = {err: true, t: "먼저 키를 붙여 넣고 저장해 주세요."}; render(); return; }
-    state.aiBusy = true; state.aiMsg = null; render();
-    try{
-      state.aiModels = await aiLoadModels();
-      state.aiMsg = {err: false, t: "쓸 수 있는 모델 " + state.aiModels.length + "개를 불러왔어요. 모델 칸을 눌러 목록에서 고르세요."};
     }catch(e){ state.aiMsg = {err: true, t: errMsg(e)}; }
     state.aiBusy = false; render();
   },
