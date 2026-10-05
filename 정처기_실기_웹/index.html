@@ -118,6 +118,17 @@ svg{display:block}
 .bar .x{background:var(--bad)}
 .st-btns{display:flex;gap:8px;margin-top:10px}
 .weak{font-size:11.5px;font-weight:700;color:var(--bad);background:var(--bad-soft);border-radius:999px;padding:1px 8px;margin-left:8px;white-space:nowrap}
+.card.fold{padding:0;overflow:hidden}
+.fold-h{display:flex;align-items:center;gap:10px;width:100%;padding:16px;border:0;background:none;text-align:left}
+.fold-h h2{flex:1;margin:0;font-size:15px;font-weight:700}
+.fold-sum{font-size:12.5px;color:var(--muted)}
+.chev{width:20px;height:20px;flex:none;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.fold-h[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.fold-b{padding:0 16px 16px;border-top:1px solid var(--line)}
+.fold-b>.srow:first-child,.fold-b>.legend+.srow{border-top:0}
+.fold-b>.note{margin-top:12px}
+.fold-b>.legend{margin-top:12px}
+.fold-b>.list{padding-top:4px}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:0 0 4px}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
 .hint-box{margin:0 0 12px;padding:14px 16px;background:var(--primary-soft);color:#1E3A9E;border-radius:var(--r);font-size:14.5px;line-height:1.65}
@@ -5443,7 +5454,7 @@ const state = {
   order:"seq", count:20,
   cAreas:new Set(cardAreas), cOrder:"freq", cUnknown:false,
   q:"", qNote:false,
-  lastStudy:"rounds", navOpen:false,
+  lastStudy:"rounds", navOpen:false, statOpen:{},
   session:null, cs:null, dataMsg:null, dataErr:false, showExport:false
 };
 
@@ -5576,6 +5587,13 @@ function chip(act, attrs, label, on, small){
 function cardSec(title, inner, links){
   return '<section class="card"><div class="card-h"><h2>'+title+'</h2>'+(links ? '<div class="hl">'+links+'</div>' : '')+'</div>'+inner+'</section>';
 }
+function foldSec(key, title, summary, inner){
+  const open = !!state.statOpen[key];
+  return '<section class="card fold"><button class="fold-h" data-act="toggleStat" data-k="'+key+'" aria-expanded="'+(open ? "true" : "false")+'">'
+    + '<h2>'+title+'</h2><span class="fold-sum">'+summary+'</span>'
+    + '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
+    + (open ? '<div class="fold-b">'+inner+'</div>' : '')+'</section>';
+}
 function orderCard(withFreq){
   return cardSec("순서", '<div class="chips">'
     + chip("setOrder", 'data-v="seq"', "출제 순서", state.order === "seq")
@@ -5600,7 +5618,7 @@ function panelStats(){
   const rows = areasPresent.map(a => { const l = ALL.filter(q => q.area === a); return {a:a, l:l, s:stat(l)}; });
   const weak = rows.filter(r => r.s.solved >= 3).sort((p,q) => pct(p.s.o,p.s.solved) - pct(q.s.o,q.s.solved))[0];
   if(all.solved === 0) h += '<div class="hint-box">문제를 풀고 채점하면 영역별 정답률과 약한 영역이 여기에 나와요.</div>';
-  else if(weak && pct(weak.s.o, weak.s.solved) < 80) h += '<div class="hint-box">지금 가장 약한 영역은 <b>'+esc(weak.a)+'</b>이에요 (정답률 '+pct(weak.s.o, weak.s.solved)+'%). 아래 버튼으로 틀린 문제부터 다시 풀어보세요.</div>';
+  else if(weak && pct(weak.s.o, weak.s.solved) < 80) h += '<div class="hint-box">지금 가장 약한 영역은 <b>'+esc(weak.a)+'</b>이에요 (정답률 '+pct(weak.s.o, weak.s.solved)+'%). 아래 <b>영역별</b>을 펼쳐서 틀린 문제부터 다시 풀어보세요.</div>';
   else h += '<div class="hint-box">푼 문제 기준으로 모든 영역이 안정적이에요. 아직 안 푼 문제를 풀어서 범위를 넓혀보세요.</div>';
 
   const bar = s => '<div class="bar"><i class="o" style="width:'+pct(s.o,s.total)+'%"></i><i class="x" style="width:'+pct(s.x,s.total)+'%"></i></div>';
@@ -5609,23 +5627,23 @@ function panelStats(){
   const legend = '<div class="legend"><span><i style="background:var(--ok)"></i>맞음</span><span><i style="background:var(--bad)"></i>틀림</span><span><i style="background:#E8ECF4"></i>안 품</span></div>';
   const numTxt = s => s.solved ? '푼 문제 '+s.solved+' / '+s.total+', 정답률 '+pct(s.o, s.solved)+'%' : '푼 문제 0 / '+s.total;
 
-  h += cardSec("영역별", legend + rows.map(r =>
+  h += foldSec("area", "영역별", rows.length+"개 영역", legend + rows.map(r =>
     '<div class="srow"><div class="st-top"><span class="st-name">'+esc(r.a)+(r.s.solved >= 3 && pct(r.s.o,r.s.solved) < 60 ? '<span class="weak">약해요</span>' : '')+'</span><span class="st-num">'+numTxt(r.s)+'</span></div>'
     + bar(r.s) + btns("area", r.a, r.s) + '</div>').join(""));
-  h += cardSec("유형별", typesPresent.map(t => { const s = stat(ALL.filter(q => q.type === t[0]));
+  h += foldSec("type", "유형별", typesPresent.length+"개 유형", typesPresent.map(t => { const s = stat(ALL.filter(q => q.type === t[0]));
     return '<div class="srow"><div class="st-top"><span class="st-name">'+esc(t[1])+'</span><span class="st-num">'+numTxt(s)+'</span></div>'+bar(s)+btns("type", t[0], s)+'</div>'; }).join(""));
   const rounds = ROUNDS.slice().sort((a,b) => b.year-a.year || b.round-a.round);
-  h += cardSec("회차별", rounds.map(r => { const s = stat(ALL.filter(q => rk(q) === rk(r)));
+  h += foldSec("round", "회차별", rounds.length+"개 회차", rounds.map(r => { const s = stat(ALL.filter(q => rk(q) === rk(r)));
     return '<div class="srow"><div class="st-top"><span class="st-name">'+r.year+'년 '+r.round+'회</span><span class="st-num">'+numTxt(s)+'</span></div>'+bar(s)+btns("round", rk(r), s)+'</div>'; }).join(""));
 
   const same = TOPICS.map((t,i) => ({t:t, i:i})).filter(x => x.t.k === "same").sort((a,b) => b.t.ids.length - a.t.ids.length || a.t.n.localeCompare(b.t.n));
-  h += cardSec("자주 나오는 개념", '<p class="note">여러 회차에서 같은 개념이 다시 나온 문제들이에요. 반복 출제된 순서대로 보여줘요.</p>' + same.map(x => {
+  h += foldSec("topic", "자주 나오는 개념", same.length+"개", '<p class="note">여러 회차에서 같은 개념이 다시 나온 문제들이에요. 반복 출제된 순서대로 보여줘요.</p>' + same.map(x => {
     const s = stat(x.t.ids.map(id => BY_ID[id]).filter(Boolean));
     return '<div class="srow"><div class="st-top"><span class="st-name">'+esc(x.t.n)+'</span><span class="st-num">'+x.t.ids.length+'회 출제'+(s.solved ? ', 내 정답 '+s.o+' / '+s.solved : '')+'</span></div>'
       + '<div class="st-btns"><button class="btn sm" data-act="topicStart" data-t="'+x.i+'">이 개념 문제 풀기</button></div></div>'; }).join(""));
 
   const hard = ALL.filter(q => att[q.id] && att[q.id][0] - att[q.id][1] > 0).sort((a,b) => (att[b.id][0]-att[b.id][1]) - (att[a.id][0]-att[a.id][1]) || POS[a.id]-POS[b.id]).slice(0, 6);
-  h += cardSec("자주 틀리는 문제", hard.length
+  h += foldSec("hard", "자주 틀리는 문제", hard.length ? hard.length+"개" : "없음", hard.length
     ? '<ul class="list">' + hard.map(q => '<li><button class="ritem" data-act="openIds" data-ids="'+hard.map(z => z.id).join(",")+'" data-id="'+q.id+'"><div class="rtop"><span class="rt">'+esc(q.label)+'<span class="ra">'+esc(q.area)+'</span></span><span class="pill bad">'+att[q.id][0]+'번 중 '+(att[q.id][0]-att[q.id][1])+'번 틀림</span></div></button></li>').join("") + '</ul>'
     : '<p class="note" style="margin:0">아직 틀린 기록이 없어요.</p>');
   return h;
@@ -6108,6 +6126,7 @@ const actions = {
   noAreas(){ state.areas.clear(); render(); },
   toggleType(d){ toggle(state.types, d.k); render(); },
   toggleFreqOnly(){ state.freqOnly = !state.freqOnly; render(); },
+  toggleStat(d){ state.statOpen[d.k] = !state.statOpen[d.k]; keepScroll(); },
   toggleReview(d){ state.review[d.k] = !state.review[d.k]; render(); },
   setOrder(d){ state.order = d.v; render(); },
   setCount(d){ state.count = +d.v; render(); },
