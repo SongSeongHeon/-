@@ -6679,16 +6679,16 @@ function aiCardHTML(){
     + msg
     + '<label class="chk" style="margin:0 0 10px"><input type="checkbox" data-ai="hint" ' + (ai.hint ? "checked" : "") + '>정답을 보기 전에는 힌트 위주로 알려주기</label>'
     + '<label class="chk" style="margin:0 0 14px"><input type="checkbox" data-ai="img" ' + (ai.img ? "checked" : "") + '>이미지 문제는 이미지도 같이 보내기</label>'
+    + (hasKey ? '<h3 class="mini">다른 기기로 키 옮기기</h3><p class="d">PC에서 설정했다면 폰에서 다시 만들 필요가 없어요. 아래 버튼으로 연결 링크를 복사해서 카카오톡 \'나와의 채팅\' 같은 곳에 붙여 넣고, 폰에서 그 링크를 열면 키가 바로 저장돼요.</p>'
+      + '<div class="drow"><button class="btn sm" data-act="aiLink">연결 링크 복사</button></div>'
+      + (state.aiLink ? '<textarea class="tx" id="ailink" readonly style="margin-top:10px;min-height:76px">' + esc(state.aiLink) + '</textarea>' : '')
+      + '<p class="d" style="margin-top:8px">링크에는 키가 들어 있어요. 남에게 보내지 말고, 폰에서 저장한 뒤에는 보낸 메시지를 지우세요.</p>' : '')
     + '<h3 class="mini">알아두세요</h3><ul class="notes">'
     + '<li><b>비용</b>: AI Studio의 무료 등급은 카드 등록 없이 쓸 수 있어요. 대신 분당, 하루 요청 수에 한도가 있어요. 한도는 모델과 시기마다 달라서 AI Studio에서 내 한도를 확인해 주세요. 한도를 넘으면 잠시 뒤에 다시 하면 돼요.</li>'
     + '<li><b>개인정보</b>: 질문 내용(문제, 내 답, 대화)이 Google로 전송돼요. 무료 등급에서는 입력한 내용이 Google의 모델 개선에 쓰일 수 있다고 알려져 있어요. 자세한 건 Google 약관을 확인해 주세요. 풀이 기록, 메모, 체크는 보내지 않아요.</li>'
     + '<li><b>키 관리</b>: 키는 비밀번호처럼 다뤄 주세요. 남에게 알려주거나 캡처로 공유하지 마세요. 공용 PC에서는 쓴 뒤 아래 <b>키 삭제</b>를 누르세요. 키가 노출됐다면 AI Studio에서 그 키를 삭제하고 새로 만드세요.</li>'
     + '<li><b>정확도</b>: AI 답변은 틀릴 수 있어요. 정답 표시와 해설을 먼저 확인하고, AI는 이해를 돕는 용도로 써 주세요.</li>'
     + '<li><b>키 없이 쓰기</b>: 키가 없어도 AI 창에서 <b>질문 복사하고 Gemini 열기</b>를 누르면 문제 내용이 복사되고 Gemini 웹이 열려요.</li></ul>'
-    + (hasKey ? '<h3 class="mini">다른 기기로 키 옮기기</h3><p class="d">PC에서 설정했다면 폰에서 다시 만들 필요가 없어요. 아래 버튼으로 연결 링크를 복사해서 카카오톡 \'나와의 채팅\' 같은 곳에 붙여 넣고, 폰에서 그 링크를 열면 키가 바로 저장돼요.</p>'
-      + '<div class="drow"><button class="btn sm" data-act="aiLink">연결 링크 복사</button></div>'
-      + (state.aiLink ? '<textarea class="tx" id="ailink" readonly style="margin-top:10px;min-height:76px">' + esc(state.aiLink) + '</textarea>' : '')
-      + '<p class="d" style="margin-top:8px">링크에는 키가 들어 있어요. 남에게 보내지 말고, 폰에서 저장한 뒤에는 보낸 메시지를 지우세요.</p>' : '')
     + (hasKey ? '<div class="drow" style="margin-top:14px"><button class="btn sm danger" data-act="aiDelKey">키 삭제</button></div>' : '')
     + '</section>';
 }
