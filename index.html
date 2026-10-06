@@ -5656,17 +5656,18 @@ function probe(name){
 }
 
 /* ---- 저장 ---- */
-const KEYS = {progress:"jcs-progress-v1", flags:"jcs-flags-v1", att:"jcs-att-v1", notes:"jcs-notes-v1", learn:"jcs-learn-v1", cards:"jcs-cards-v1", settings:"jcs-settings-v1", chats:"jcs-chat-v1", ai:"jcs-ai-v1", ansfix:"jcs-ansfix-v1", resume:"jcs-resume-v1", aiq:"jcs-aiq-v1", wrong:"jcs-wrong-v1", reasons:"jcs-reason-v1"};
+const KEYS = {progress:"jcs-progress-v1", flags:"jcs-flags-v1", att:"jcs-att-v1", notes:"jcs-notes-v1", learn:"jcs-learn-v1", cards:"jcs-cards-v1", settings:"jcs-settings-v1", chats:"jcs-chat-v1", ai:"jcs-ai-v1", ansfix:"jcs-ansfix-v1", resume:"jcs-resume-v1", cresume:"jcs-cresume-v1", aiq:"jcs-aiq-v1", wrong:"jcs-wrong-v1", reasons:"jcs-reason-v1"};
 function load(key, def){ try{ const v = JSON.parse(localStorage.getItem(key) || "null"); return v && typeof v === "object" ? v : def; }catch(e){ return def; } }
 function save(name, val){ try{ localStorage.setItem(KEYS[name], JSON.stringify(val)); }catch(e){} }
 let progress = load(KEYS.progress, {}), flags = load(KEYS.flags, {}), att = load(KEYS.att, {}),
     notes = load(KEYS.notes, {}), learn = load(KEYS.learn, {}), cards = load(KEYS.cards, {}),
     settings = Object.assign({ln:true}, load(KEYS.settings, {})),
     chats = load(KEYS.chats, {}),
-    ai = Object.assign({key:"", model:"gemini-3.6-flash", img:true, hint:true, fallback:true}, load(KEYS.ai, {}));
-if(ai.model === "gemini-2.5-flash"){ ai.model = "gemini-3.6-flash"; save("ai", ai); }
+    ai = Object.assign({key:"", model:"gemini-3.5-flash-lite", img:true, hint:true, fallback:true}, load(KEYS.ai, {}));
+if(ai.model === "gemini-2.5-flash"){ ai.model = "gemini-3.5-flash-lite"; save("ai", ai); }
 let ansfix = load(KEYS.ansfix, {});
 let resume = load(KEYS.resume, null);
+let cresume = load(KEYS.cresume, null);
 const REASONS = [["concept","개념을 몰라서"],["calc","계산, 추적 실수"],["slip","단순 실수"],["confuse","헷갈려서"]];
 const REASON_NAME = Object.fromEntries(REASONS);
 const GRAD_STREAK = 2;
@@ -6225,6 +6226,7 @@ function renderHome(){
     body += panelAi();
   } else if(m === "cards"){
     const uc = ALL.filter(q => cards[q.id] === "u").length, kc = ALL.filter(q => cards[q.id] === "k").length;
+    body += cardResumeHTML();
     body += cardSec("키워드 카드", '<p class="note" style="margin:0">설명을 보고 용어를 떠올리는 연습이에요. 개념 문제 '+ALL.filter(q => q.type === "concept").length+'개를 카드로 보여줘요. 답을 확인한 뒤 "알아요 / 헷갈려요"로 표시하면, 헷갈리는 카드만 다시 볼 수 있어요.</p>');
     body += cardSec("영역", scopeRow("cScope", state.cAreas, cardAreas, countConceptArea) + groupedChips("toggleCArea", state.cAreas, cardAreas, countConceptArea));
     body += cardSec("순서", '<div class="chips">'
@@ -6719,6 +6721,30 @@ function resumeCardHTML(){
   return '<section class="card resume"><div class="rtxt"><b>이어서 풀기</b><p>' + esc(resume.label || "풀던 문제") + ' ' + (r.i + 1) + ' / ' + r.list.length + '번째, ' + esc(q.label) + (done ? ' (' + done + '문제 채점함)' : '') + '</p></div>'
     + '<div class="rbt"><button class="btn primary sm" data-act="resumeGo">이어서 풀기</button><button class="link" data-act="resumeClear">지우기</button></div></section>';
 }
+/* 카드 이어하기: 학습(문제 풀이) 이어하기와 따로 저장해요 */
+function saveCardResume(){
+  const c = state.cs;
+  if(!c) return;
+  const mark = {}; c.list.forEach(q => { if(c.mark[q.id]) mark[q.id] = c.mark[q.id]; });
+  cresume = {ids: c.list.map(q => q.id), i: c.i, flip: !!c.flip, mark: mark, label: c.label || "키워드 카드", at: Date.now()};
+  save("cresume", cresume);
+}
+function clearCardResume(){ cresume = null; try{ localStorage.removeItem(KEYS.cresume); }catch(e){} }
+function cardResumeInfo(){
+  if(!cresume || !Array.isArray(cresume.ids)) return null;
+  const list = cresume.ids.map(findQ).filter(Boolean);
+  if(!list.length) return null;
+  let i = list.findIndex(q => q.id === cresume.ids[cresume.i | 0]);
+  if(i < 0) i = 0;
+  return {list: list, i: i};
+}
+function cardResumeHTML(){
+  const r = cardResumeInfo();
+  if(!r) return "";
+  const q = r.list[r.i], done = r.list.filter(x => cresume.mark && cresume.mark[x.id]).length;
+  return '<section class="card resume"><div class="rtxt"><b>이어서 보기</b><p>' + esc(cresume.label || "키워드 카드") + ' ' + (r.i + 1) + ' / ' + r.list.length + '번째, ' + esc(q.label) + (done ? ' (' + done + '장 표시함)' : '') + '</p></div>'
+    + '<div class="rbt"><button class="btn primary sm" data-act="cresumeGo">이어서 보기</button><button class="link" data-act="cresumeClear">지우기</button></div></section>';
+}
 let histPushed = false, backPending = false, backTimer = 0;
 const SUBSCREENS = ["solve", "card", "result", "cardResult", "check", "note"];
 const isSub = () => SUBSCREENS.indexOf(state.screen) >= 0;
@@ -6771,6 +6797,7 @@ function render(){
   else if(sc === "data") renderData();
   else if(sc === "check") renderCheck();
   if(sc === "solve") saveResume(); else if(sc === "result") clearResume();
+  if(sc === "card") saveCardResume(); else if(sc === "cardResult") clearCardResume();
   renderChat();
   syncHistory();
   const key = viewKey();
@@ -7009,7 +7036,7 @@ const actions = {
     if(l.length){ newSession(l, 0, "틀린 문제 다시 풀기"); render(); }
   },
   /* 카드 */
-  startCards(){ const l = cardList(); if(!l.length) return; state.cs = {list:l, i:0, flip:false, mark:{}}; state.screen = "card"; render(); },
+  startCards(){ const l = cardList(); if(!l.length) return; state.cs = {list:l, i:0, flip:false, mark:{}, label:state.cUnknown ? "헷갈리는 카드" : "키워드 카드"}; state.screen = "card"; render(); },
   cardFlip(){ state.cs.flip = true; keepScroll(); },
   cardPrev(){ const c = state.cs; if(c.i > 0){ c.i--; c.flip = false; render(); } },
   cardMark(d){
@@ -7020,7 +7047,7 @@ const actions = {
   },
   cardRetry(){
     const c = state.cs, l = c.list.filter(q => c.mark[q.id] === "u");
-    if(l.length){ state.cs = {list:l, i:0, flip:false, mark:{}}; state.screen = "card"; render(); }
+    if(l.length){ state.cs = {list:l, i:0, flip:false, mark:{}, label:"헷갈리는 카드 다시"}; state.screen = "card"; render(); }
   },
   /* 기록 */
   openData(){ state.screen = "data"; state.dataMsg = null; state.showExport = false; render(); },
@@ -7068,7 +7095,7 @@ const actions = {
    ===================================================================== */
 const GAPI = "https://generativelanguage.googleapis.com/v1beta";
 const AI_KEY_URL = "https://aistudio.google.com/app/apikey";
-const AI_DEFAULT_MODEL = "gemini-3.6-flash";
+const AI_DEFAULT_MODEL = "gemini-3.5-flash-lite";
 const IMGCACHE = {};
 const aiReady = () => !!(ai.key && ai.key.trim());
 
@@ -7203,8 +7230,8 @@ function errMsg(e){
   return "연결하지 못했어요. 인터넷 연결을 확인해 주세요. (" + m.slice(0, 60) + ")";
 }
 const AI_MODELS = [
-  {id:"gemini-3.5-flash-lite", name:"Gemini 3.5 Flash-Lite", desc:"가장 빠른 답변 제공"},
-  {id:"gemini-3.6-flash", name:"Gemini 3.6 Flash", desc:"무엇이든 도움을 받으세요 (기본)"},
+  {id:"gemini-3.5-flash-lite", name:"Gemini 3.5 Flash-Lite", desc:"가장 빠른 답변 제공 (기본)"},
+  {id:"gemini-3.6-flash", name:"Gemini 3.6 Flash", desc:"무엇이든 도움을 받으세요"},
   {id:"gemini-3.1-pro-preview", name:"Gemini 3.1 Pro", desc:"고급 추론. 느리고 무료 한도가 더 적을 수 있어요"}
 ];
 const aiIsCustom = () => state.aiCustom || !AI_MODELS.some(m => m.id === ai.model);
@@ -7808,7 +7835,16 @@ Object.assign(actions, {
     pick(resume.st, s.st); pick(resume.res, s.res); pick(resume.inp, s.inp); pick(resume.last, s.last); pick(resume.counted, s.counted); pick(resume.wb, s.wbBefore); pick(resume.grad, s.graduated);
     s.focusNext = false; render();
   },
-  resumeClear(){ clearResume(); render(); }
+  resumeClear(){ clearResume(); render(); },
+  cresumeGo(){
+    const r = cardResumeInfo();
+    if(!r) return;
+    const mark = {};
+    Object.keys(cresume.mark || {}).forEach(id => { if(r.list.some(q => q.id === id)) mark[id] = cresume.mark[id]; });
+    state.cs = {list: r.list, i: r.i, flip: !!cresume.flip, mark: mark, label: cresume.label || "키워드 카드"};
+    state.screen = "card"; render();
+  },
+  cresumeClear(){ clearCardResume(); render(); }
 });
 
 /* =====================================================================
