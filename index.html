@@ -6130,8 +6130,8 @@ function panelTopics(){
   const idx = TOPICS.map((t, i) => i), same = idx.filter(i => TOPICS[i].k === "same").sort(sortFn), theme = idx.filter(i => TOPICS[i].k === "theme").sort(sortFn);
   return cardSec("주제별 학습", '<p class="note" style="margin:0">같은 개념이나 같은 주제의 문제를 모아 놓았어요. <b>개념 노트</b>로 핵심을 읽고, <b>문제 풀기</b>로 바로 풀어 보세요.</p>')
     + cardSec("정렬", '<div class="chips">' + chip("setTopicSort", 'data-v="freq"', "많이 나온 순", state.topicSort === "freq") + chip("setTopicSort", 'data-v="weak"', "약한 순", state.topicSort === "weak") + chip("setTopicSort", 'data-v="name"', "이름순", state.topicSort === "name") + '</div>')
-    + cardSec("자주 나오는 개념 ("+same.length+")", '<p class="note">여러 회차에 같은 개념이 다시 나왔어요.</p>' + same.map(topicRowHTML).join(""))
-    + cardSec("같은 주제 모음 ("+theme.length+")", '<p class="note">비슷한 유형의 문제를 주제별로 묶었어요.</p>' + theme.map(topicRowHTML).join(""));
+    + foldSec("tsame", "자주 나오는 개념", same.length+"개", '<p class="note">여러 회차에 같은 개념이 다시 나왔어요.</p>' + same.map(topicRowHTML).join(""))
+    + foldSec("ttheme", "같은 주제 모음", theme.length+"개", '<p class="note">비슷한 유형의 문제를 주제별로 묶었어요.</p>' + theme.map(topicRowHTML).join(""));
 }
 
 /* ---- 통계 화면 ---- */
