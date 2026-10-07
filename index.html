@@ -254,6 +254,15 @@ pre.code .blank{background:#FFD34D;color:#17233A;box-shadow:none;outline:1.5px s
 .memo h3{margin:0 0 8px;font-size:14px}
 .memo textarea{width:100%;min-height:80px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font:15px/1.6 var(--sans);resize:vertical;background:#fff}
 .memo textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft)}
+.extra.hastbl{white-space:normal}
+.extra .tbltxt{white-space:pre-wrap;margin:0 0 8px}
+.tblfig{display:flex;flex-wrap:wrap;gap:6px 22px;margin:4px 0 8px}
+.tblfig figure{margin:0}
+.tblfig figcaption{font:600 15px/1.5 var(--sans);margin:0 0 4px}
+.tblscroll{overflow-x:auto;margin:4px 0 8px;-webkit-overflow-scrolling:touch}
+.qtbl{border-collapse:collapse;background:#fff;font:15px/1.5 var(--sans)}
+.qtbl td,.qtbl th{border:1px solid var(--line);padding:8px 12px;text-align:center;min-width:56px;white-space:nowrap}
+.qtbl th{background:#F2F4F8;font-weight:700}
 .dockwrap{position:sticky;bottom:0;z-index:7}
 .dockwrap .actionbar{position:static}
 .calcdock{background:rgba(255,255,255,.98);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(20,30,60,.06)}
@@ -6303,11 +6312,56 @@ function freqTag(q){
   if(f.theme >= 3) return '<span class="pill">같은 주제 '+f.theme+'문제</span>';
   return "";
 }
+/* 문제의 보기(extra/after)에 글자로 적힌 표를 표 모양으로 바꿔요
+   - "T1(A) : 3, 1, 4"       -> 이름 T1, 칸 3 / 1 / 4 (값이 한 칸씩)
+   - "사원 [사원번호(PK), 이름]" -> 이름 사원, 머리글 칸들
+   - "학번 | 이름 | 학년"      -> 줄마다 한 행인 표 (첫 줄은 머리글)
+   표로 바꿀 줄이 없으면 null을 돌려줘서 기존처럼 글로 보여줘요. */
+const TBL_COLS = /^([A-Za-z_가-힣][\w가-힣]*)\s*\(([^()]+)\)\s*:\s*(.+,.+)$/;
+const TBL_HEAD = /^([A-Za-z_가-힣][\w가-힣]*)\s*\[(.+,.+)\]\s*$/;
+function tableRows(text){
+  const lines = String(text).split("\n");
+  const parts = []; let hit = false;
+  for(let i = 0; i < lines.length; i++){
+    const ln = lines[i];
+    let m;
+    if((m = ln.trim().match(TBL_COLS))){
+      hit = true;
+      parts.push({k:"col", name:m[1], vals:m[3].split(",").map(x => x.trim()).filter(x => x !== "")});
+    } else if((m = ln.trim().match(TBL_HEAD))){
+      hit = true;
+      parts.push({k:"head", name:m[1], cols:m[2].split(",").map(x => x.trim()).filter(x => x !== "")});
+    } else if(ln.indexOf(" | ") >= 0){
+      const rows = [];
+      while(i < lines.length && lines[i].indexOf(" | ") >= 0){ rows.push(lines[i].split("|").map(x => x.trim())); i++; }
+      i--; hit = true; parts.push({k:"grid", rows:rows});
+    } else parts.push({k:"text", t:ln});
+  }
+  return hit ? parts : null;
+}
+function tableBlockHTML(text, q, bl){
+  const parts = tableRows(text);
+  if(!parts) return null;
+  let h = "", buf = [], tbls = "";
+  const flushText = () => { if(buf.length){ const t = buf.join("\n").replace(/^\n+|\n+$/g, ""); if(t) h += '<div class="tbltxt">' + hl(esc(t), q, bl) + '</div>'; buf = []; } };
+  const flushTbl = () => { if(tbls){ h += '<div class="tblfig">' + tbls + '</div>'; tbls = ""; } };
+  parts.forEach(pt => {
+    if(pt.k === "text"){ flushTbl(); buf.push(pt.t); return; }
+    flushText();
+    if(pt.k === "col") tbls += '<figure><figcaption>' + esc(pt.name) + '</figcaption><table class="qtbl">' + pt.vals.map(v => '<tr><td>' + esc(v) + '</td></tr>').join("") + '</table></figure>';
+    else if(pt.k === "head") tbls += '<figure><figcaption>' + esc(pt.name) + '</figcaption><table class="qtbl"><tr>' + pt.cols.map(c => '<th>' + esc(c) + '</th>').join("") + '</tr></table></figure>';
+    else { flushTbl(); h += '<div class="tblscroll"><table class="qtbl">' + pt.rows.map((r, i) => '<tr>' + r.map(c => i === 0 ? '<th>' + esc(c) + '</th>' : '<td>' + esc(c) + '</td>').join("") + '</tr>').join("") + '</table></div>'; }
+  });
+  flushText(); flushTbl();
+  return h;
+}
 function questionBody(q, bl, withBlankHints){
   const stemH = '<p class="stem">'+hl(esc(q.stem), q, bl)+'</p>';
-  const extraH = q.extra ? '<div class="extra">'+hl(esc(q.extra), q, bl)+'</div>' : '';
+  const extraT = q.extra ? tableBlockHTML(q.extra, q, bl) : null;
+  const extraH = q.extra ? '<div class="extra' + (extraT ? ' hastbl' : '') + '">' + (extraT !== null ? extraT : hl(esc(q.extra), q, bl)) + '</div>' : '';
   const codeH = q.code ? codeBlock(q, bl) : '';
-  const afterH = q.after ? '<div class="extra">'+hl(esc(q.after), q, bl)+'</div>' : '';
+  const afterT = q.after ? tableBlockHTML(q.after, q, bl) : null;
+  const afterH = q.after ? '<div class="extra' + (afterT ? ' hastbl' : '') + '">' + (afterT !== null ? afterT : hl(esc(q.after), q, bl)) + '</div>' : '';
   const figH = figs(imgNames(q,"q"));
   let h = stemH;
   if(withBlankHints){
@@ -6477,6 +6531,7 @@ function wbDoneHTML(q){
 }
 function renderSolve(){
   const s = state.session, q = s.list[s.i], total = s.list.length;
+  if(s.calcQ !== q.id){ s.calcOpen = false; s.calcQ = q.id; }
   const st = s.st[q.id], res = s.res[q.id], f = formOf(q), inp = getInp(q.id);
   const last = s.i === total - 1;
   const anim = s.justGraded === q.id;
