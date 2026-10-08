@@ -7429,13 +7429,19 @@ function verifyText(q){
   if(VNOTE[q.id]) out.push("주의: " + VNOTE[q.id]);
   return out.join("\n");
 }
+/* AI에게 보내는 코드에는 화면에 보이는 줄 번호를 그대로 붙여요 (빈 줄도 번호가 있어요).
+   번호 없이 보내면 AI가 줄을 직접 세다가 "몇 번째 줄"을 잘못 말해요. */
+function numberedCode(code){
+  const lines = String(code).split("\n"), w = String(lines.length).length;
+  return lines.map((l, i) => String(i + 1).padStart(w, " ") + "│ " + l).join("\n");
+}
 function questionText(q){
-  return [q.stem, q.extra, q.code ? "```\n" + q.code + "\n```" : "", q.after].filter(Boolean).join("\n\n");
+  return [q.stem, q.extra, q.code ? "```\n" + numberedCode(q.code) + "\n```" : "", q.after].filter(Boolean).join("\n\n");
 }
 function contextBlock(q){
   const rev = isRevealed(q), mine = myAnswerText(q);
   let t = "[문제 정보]\n" + q.label + " (영역: " + q.area + ", 유형: " + TYPE_NAME[q.type] + ")\n\n" + questionText(q);
-  if(q.code) t += "\n\n(코드의 줄 번호는 첫 줄이 1번이야.)";
+  if(q.code) t += "\n\n(코드 앞의 숫자와 │ 는 화면에 보이는 줄 번호야. 빈 줄도 번호가 있어. 줄 번호를 말할 때는 이 번호를 그대로 쓰고 직접 세지 마. 줄을 가리킬 때는 '12번 줄: 코드 내용'처럼 번호와 그 줄의 코드를 같이 적어.)";
   if(q.img) t += "\n\n(이 문제에는 이미지가 있어.)";
   t += "\n\n[정답]\n" + q.ans.join("\n");
   if(explOf(q)) t += "\n\n[해설 참고]\n" + explOf(q).replace(/\{\{|\}\}/g, "");
@@ -7451,14 +7457,16 @@ function contextBlock(q){
 }
 function buildSystem(q){
   const rev = isRevealed(q);
-  let t = "너는 정보처리기사 실기를 준비하는 학생을 돕는 친절한 튜터야.\n"
-    + "- 한국어 해요체로 짧고 쉽게 설명해. 필요하면 번호 목록으로 단계별로 보여줘.\n"
-    + "- 코드 문제는 코드 줄 번호를 말하면서 변수 값이 어떻게 바뀌는지 따라가며 설명해.\n"
+  let t = "너는 정보처리기사 실기를 준비하는 학생에게 답하는 튜터야. 간결하고 사무적인 말투로 답해.\n"
+    + "- 한국어 합니다체(~입니다, ~합니다)로 쓰고, 결론이나 답부터 말해. 기본은 5문장 이내로 답하고, 학생이 더 자세히 알려 달라고 할 때만 길게 설명해.\n"
+    + "- 인사, 칭찬, 격려, 감탄, 이모지, 공감 표현, 사과, 서론, '궁금한 점이 있으면 물어보세요' 같은 맺음말은 쓰지 마. 질문에 필요한 내용만 써.\n"
+    + "- 단계가 필요하면 번호 목록으로 한 단계에 한 줄씩만 써. 질문하지 않은 내용(관련 개념, 다른 풀이, 암기 팁)은 덧붙이지 마.\n"
+    + "- 코드 문제는 코드 줄 번호를 말하면서 변수 값이 어떻게 바뀌는지 따라가며 설명해. 줄 번호는 코드 앞에 붙은 번호만 인용하고, 그 줄의 코드도 함께 적어서 확인할 수 있게 해.\n"
     + "- 확실하지 않은 건 모른다고 말하고, 지어내지 마.\n"
-    + "- 시험 범위 안에서 설명하고, 같은 설명을 길게 반복하지 마.\n\n"
+    + "- 시험 범위 안에서 설명하고, 같은 설명을 반복하지 마. 학생이 쓴 답이 맞으면 맞다고만 하고 풀이를 다시 늘어놓지 마.\n\n"
     + contextBlock(q) + "\n\n";
   if(!rev && ai.hint) t += "[답변 규칙] 학생은 아직 정답을 확인하지 않았어. 학생이 직접 정답을 알려달라고 하기 전에는 최종 정답을 바로 말하지 말고, 힌트와 풀이 방향을 단계별로 줘.";
-  else t += "[답변 규칙] 학생이 정답을 알고 있어도 돼. 정답과 풀이를 자유롭게 설명해.";
+  else t += "[답변 규칙] 학생이 정답을 알고 있어도 돼. 질문에 필요한 만큼만 정답과 풀이를 짧게 설명해.";
   return t;
 }
 async function getImages(q){
