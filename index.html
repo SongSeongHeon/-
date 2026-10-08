@@ -5747,13 +5747,15 @@ const reviewCount = () => ALL.filter(q => wrongBook[q.id] || flags[q.id]).length
    채점
    ===================================================================== */
 const CIRC = /[①-⑳]/g;
+/* 표 모양 답("name | incentives")은 | 없이 띄어쓰기만 써도 맞게 봐요. 한 글자짜리 |만 지우고 || 는 그대로 둬요 */
+const dropPipe = s => String(s).replace(/\|\|/g, "\u0001").replace(/\|/g, "").replace(/\u0001/g, "||");
 function normStr(s, q, f){
   s = String(s == null ? "" : s).replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/\u00A0/g," ");
   if(f && f.digits){
     s = s.replace(CIRC, c => String(c.charCodeAt(0) - 0x2460 + 1));
     return s.replace(/\D/g,"");
   }
-  if(q.type === "code" || q.type === "calc") return s.replace(/\s+/g,"").replace(/ms$/i,"");
+  if(q.type === "code" || q.type === "calc") return dropPipe(s).replace(/\s+/g,"").replace(/ms$/i,"");
   if(q.type === "fill") return s.replace(/\s+/g,"").toLowerCase().replace(/;+$/,"");
   return s.toLowerCase().replace(/[\s.,;:'"()\[\]{}<>·\-_]/g,"");
 }
@@ -5847,7 +5849,7 @@ function formOf(q){
 }
 function linesOf(s){ return String(s == null ? "" : s).replace(/\r/g, "").split("\n").map(l => l.trim()).filter(Boolean); }
 function linesEqual(u, e){
-  const ul = linesOf(u), el = linesOf(e), sq = x => x.replace(/\s+/g, "");
+  const ul = linesOf(u), el = linesOf(e), sq = x => dropPipe(x).replace(/\s+/g, "");
   if(!el.length || !ul.length) return false;
   if(ul.length === el.length) return el.every((l, i) => sq(l) === sq(ul[i]));
   if(ul.length === 1 && el.length > 1 && el.every(l => !/\s/.test(l))){
